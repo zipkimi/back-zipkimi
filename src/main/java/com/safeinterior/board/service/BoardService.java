@@ -15,6 +15,7 @@ import com.safeinterior.board.BoardRepository;
 import com.safeinterior.board.dto.request.FraudPreventionRequest;
 import com.safeinterior.board.dto.response.FraudPreventionResponse;
 import com.safeinterior.entity.BoardEntity;
+import com.safeinterior.user.UserRepository;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,11 +26,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BoardService {
 	private final BoardRepository boardRepository;
+	private final UserRepository userRepository;
 	private final ModelMapper modelMapper;
 
 	public void setFraudPrevention(FraudPreventionRequest fraudPreventionRequest) {
 		BoardEntity entity = BoardEntity.builder()
-			.userId(fraudPreventionRequest.getUserId())
+			.user(userRepository.findById(fraudPreventionRequest.getUserId()).get())
 			.type("fraudPrevention")
 			.title(fraudPreventionRequest.getTitle())
 			.content(fraudPreventionRequest.getContent())
