@@ -37,6 +37,8 @@ public class BoardEntity {
 
 	private String title;
 
+	private String subTitle;
+
 	private String content;
 
 	private String type;
