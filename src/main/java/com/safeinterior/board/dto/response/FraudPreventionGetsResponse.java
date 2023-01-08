@@ -13,10 +13,12 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FraudPreventionResponse {
+public class FraudPreventionGetsResponse {
 	private Long id;
 
 	private String title;
+
+	private String subTitle;
 
 	private String content;
 

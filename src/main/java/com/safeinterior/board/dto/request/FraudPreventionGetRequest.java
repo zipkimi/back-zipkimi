@@ -5,10 +5,12 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class FraudPreventionRequest {
+public class FraudPreventionGetRequest {
 	private Long userId;
 
 	private String title;
+
+	private String subTitle;
 
 	private String content;
 }
