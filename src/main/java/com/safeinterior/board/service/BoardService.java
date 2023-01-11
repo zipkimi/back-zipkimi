@@ -2,6 +2,7 @@ package com.safeinterior.board.service;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -12,8 +13,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.safeinterior.board.BoardRepository;
-import com.safeinterior.board.dto.request.FraudPreventionRequest;
-import com.safeinterior.board.dto.response.FraudPreventionResponse;
+import com.safeinterior.board.dto.request.FraudPreventionGetRequest;
+import com.safeinterior.board.dto.response.FraudPreventionGetResponse;
+import com.safeinterior.board.dto.response.FraudPreventionGetsResponse;
 import com.safeinterior.entity.BoardEntity;
 import com.safeinterior.user.UserRepository;
 
@@ -29,23 +31,34 @@ public class BoardService {
 	private final UserRepository userRepository;
 	private final ModelMapper modelMapper;
 
-	public void setFraudPrevention(FraudPreventionRequest fraudPreventionRequest) {
+	public void setFraudPrevention(FraudPreventionGetRequest fraudPreventionGetRequest) {
 		BoardEntity entity = BoardEntity.builder()
-			.user(userRepository.findById(fraudPreventionRequest.getUserId()).get())
+			.user(userRepository.findById(fraudPreventionGetRequest.getUserId())
+				.orElseThrow(() -> new RuntimeException("등록하지 않은 사용자 입니다.")))
 			.type("fraudPrevention")
-			.title(fraudPreventionRequest.getTitle())
-			.content(fraudPreventionRequest.getContent())
+			.title(fraudPreventionGetRequest.getTitle())
+			.subTitle(fraudPreventionGetRequest.getSubTitle())
+			.content(fraudPreventionGetRequest.getContent())
 			.build();
 		entity.setRegDt(ZonedDateTime.now());
 		boardRepository.save(entity);
 	}
 
-	public Page<FraudPreventionResponse> getFraudPreventions(Pageable pageable) {
+	public Page<FraudPreventionGetsResponse> getFraudPreventions(Pageable pageable) {
 		Page<BoardEntity> pageBoardEntities = boardRepository.findByType("fraudPrevention", pageable);
-		List<FraudPreventionResponse> fraudPreventionResponses = pageBoardEntities.getContent()
+		List<FraudPreventionGetsResponse> fraudPreventionGetsRespons = pageBoardEntities.getContent()
 			.stream()
-			.map(boardEntity -> modelMapper.map(boardEntity, FraudPreventionResponse.class))
+			.map(boardEntity -> modelMapper.map(boardEntity, FraudPreventionGetsResponse.class))
 			.toList();
-		return new PageImpl<>(fraudPreventionResponses, pageable, pageBoardEntities.getTotalElements());
+		return new PageImpl<>(fraudPreventionGetsRespons, pageable, pageBoardEntities.getTotalElements());
+	}
+
+	public FraudPreventionGetResponse getFraudPrevention(long id) {
+		Optional<BoardEntity> boardEntityOptional = boardRepository.findById(id);
+		FraudPreventionGetResponse response = null;
+		if(!boardEntityOptional.isEmpty()){
+			response = modelMapper.map(boardEntityOptional.get(), FraudPreventionGetResponse.class);
+		}
+		return response;
 	}
 }

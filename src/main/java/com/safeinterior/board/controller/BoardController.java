@@ -9,12 +9,14 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.safeinterior.board.dto.request.FraudPreventionRequest;
-import com.safeinterior.board.dto.response.FraudPreventionResponse;
+import com.safeinterior.board.dto.response.FraudPreventionGetResponse;
+import com.safeinterior.board.dto.request.FraudPreventionGetRequest;
+import com.safeinterior.board.dto.response.FraudPreventionGetsResponse;
 import com.safeinterior.board.service.BoardService;
 
 import lombok.AllArgsConstructor;
@@ -31,23 +33,28 @@ public class BoardController {
 	}
 
 	@PostMapping("/basic")
-	public ResponseEntity<Object> setBoard(FraudPreventionRequest fraudPreventionRequest) {
-		fraudPreventionRequest.getContent();
-		fraudPreventionRequest.getTitle();
-		boardService.setFraudPrevention(fraudPreventionRequest);
+	public ResponseEntity<Object> setBoard(FraudPreventionGetRequest fraudPreventionGetRequest) {
+		fraudPreventionGetRequest.getContent();
+		fraudPreventionGetRequest.getTitle();
+		boardService.setFraudPrevention(fraudPreventionGetRequest);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@PostMapping("/fraud-prevention")
-	public ResponseEntity<HttpStatus> setFraudPrevention(HttpServletRequest request, FraudPreventionRequest fraudPreventionRequest) {
-		boardService.setFraudPrevention(fraudPreventionRequest);
+	public ResponseEntity<HttpStatus> setFraudPrevention(HttpServletRequest request, FraudPreventionGetRequest fraudPreventionGetRequest) {
+		boardService.setFraudPrevention(fraudPreventionGetRequest);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping("/fraud-prevention")
-	public ResponseEntity<Page<FraudPreventionResponse>> getFraudPreventions(HttpServletRequest request,
+	public ResponseEntity<Page<FraudPreventionGetsResponse>> getFraudPreventions(HttpServletRequest request,
 		@PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC) Pageable pageable) {
 		return new ResponseEntity<>(boardService.getFraudPreventions(pageable), HttpStatus.OK);
+	}
+
+	@GetMapping("/fraud-prevention/{id}")
+	public ResponseEntity<FraudPreventionGetResponse> getFraudPrevention(HttpServletRequest request, @PathVariable long id) {
+		return new ResponseEntity<>(boardService.getFraudPrevention(id), HttpStatus.OK);
 	}
 
 }
