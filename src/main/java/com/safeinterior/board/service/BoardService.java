@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.safeinterior.board.BoardRepository;
 import com.safeinterior.board.dto.request.FraudPreventionGetRequest;
+import com.safeinterior.board.dto.request.FraudPreventionPatchRequest;
 import com.safeinterior.board.dto.response.FraudPreventionGetResponse;
 import com.safeinterior.board.dto.response.FraudPreventionGetsResponse;
 import com.safeinterior.entity.BoardEntity;
@@ -60,5 +61,9 @@ public class BoardService {
 			response = modelMapper.map(boardEntityOptional.get(), FraudPreventionGetResponse.class);
 		}
 		return response;
+	}
+
+	public void patchFraudPrevention(long id, FraudPreventionPatchRequest requestDto) {
+
 	}
 }
