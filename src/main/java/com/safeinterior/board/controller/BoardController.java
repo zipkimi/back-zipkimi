@@ -21,10 +21,14 @@ import com.safeinterior.board.dto.request.FraudPreventionGetRequest;
 import com.safeinterior.board.dto.response.FraudPreventionGetsResponse;
 import com.safeinterior.board.service.BoardService;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
 
 @RestController
 @AllArgsConstructor
+@Api(value = "게시판 API - 피해예방법, 피해커퓨니티")
 @RequestMapping(value = "/board")
 public class BoardController {
 	private BoardService boardService;
@@ -46,6 +50,7 @@ public class BoardController {
 	 * 피해예방법 - 등록
 	 * */
 	@PostMapping("/fraud-prevention")
+	@ApiOperation(value = "피해예방법 - 등록", notes = "")
 	public ResponseEntity<HttpStatus> setFraudPrevention(HttpServletRequest request, FraudPreventionGetRequest requestDto) {
 		boardService.setFraudPrevention(requestDto);
 		return new ResponseEntity<>(HttpStatus.OK);
@@ -55,6 +60,7 @@ public class BoardController {
 	 * 피해예방법 - 목록 조회
 	 * */
 	@GetMapping("/fraud-prevention")
+	@ApiOperation(value = "피해예방법 - 목록 조회", notes = "")
 	public ResponseEntity<Page<FraudPreventionGetsResponse>> getFraudPreventions(HttpServletRequest request,
 		@PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC) Pageable pageable) {
 		return new ResponseEntity<>(boardService.getFraudPreventions(pageable), HttpStatus.OK);
@@ -64,6 +70,8 @@ public class BoardController {
 	 * 피해예방법 - 상세 조회
 	 * */
 	@GetMapping("/fraud-prevention/{id}")
+	@ApiOperation(value = "피해예방법 - 상세 조회", notes = "")
+	@ApiImplicitParam(name = "id", value = "게시판 아이디", required = true)
 	public ResponseEntity<FraudPreventionGetResponse> getFraudPrevention(HttpServletRequest request, @PathVariable long id) {
 		return new ResponseEntity<>(boardService.getFraudPrevention(id), HttpStatus.OK);
 	}
@@ -72,7 +80,9 @@ public class BoardController {
 	 * 피해예방법 - 수정
 	 * */
 	@PatchMapping("/fraud-prevention/{id}")
-	public ResponseEntity<FraudPreventionGetResponse> 정(HttpServletRequest request, @PathVariable long id,
+	@ApiOperation(value = "피해예방법 - 수정", notes = "")
+	@ApiImplicitParam(name = "id", value = "게시판 아이디", required = true)
+	public ResponseEntity<FraudPreventionGetResponse> patchFraudPrevention(HttpServletRequest request, @PathVariable long id,
 		FraudPreventionPatchRequest requestDto) {
 		boardService.patchFraudPrevention(id, requestDto);
 		return new ResponseEntity<>(HttpStatus.OK);
