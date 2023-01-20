@@ -18,6 +18,7 @@ import com.safeinterior.board.dto.request.FraudPreventionPatchRequest;
 import com.safeinterior.board.dto.response.FraudPreventionGetResponse;
 import com.safeinterior.board.dto.response.FraudPreventionGetsResponse;
 import com.safeinterior.entity.BoardEntity;
+import com.safeinterior.exception.BadRequestException;
 import com.safeinterior.user.UserRepository;
 
 import lombok.AllArgsConstructor;
@@ -57,13 +58,23 @@ public class BoardService {
 	public FraudPreventionGetResponse getFraudPrevention(long id) {
 		Optional<BoardEntity> boardEntityOptional = boardRepository.findById(id);
 		FraudPreventionGetResponse response = null;
-		if(!boardEntityOptional.isEmpty()){
+		if (!boardEntityOptional.isEmpty()) {
 			response = modelMapper.map(boardEntityOptional.get(), FraudPreventionGetResponse.class);
 		}
 		return response;
 	}
 
 	public void patchFraudPrevention(long id, FraudPreventionPatchRequest requestDto) {
-
+		Optional<BoardEntity> optionalBoard = boardRepository.findById(id);
+		BoardEntity board;
+		if (optionalBoard.isPresent()) {
+			board = optionalBoard.get();
+		} else {
+			throw new BadRequestException();
+		}
+		board.setTitle(requestDto.getTitle() == null ? board.getTitle() : requestDto.getTitle());
+		board.setSubTitle(requestDto.getSubTitle() == null ? board.getSubTitle() : requestDto.getSubTitle());
+		board.setContent(requestDto.getContent() == null ? board.getContent() : requestDto.getContent());
+		boardRepository.save(board);
 	}
 }

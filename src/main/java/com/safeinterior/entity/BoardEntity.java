@@ -10,8 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,7 +46,7 @@ public class BoardEntity {
 	@CreatedDate
 	private ZonedDateTime regDt;
 
-	@LastModifiedDate
+	@UpdateTimestamp
 	private ZonedDateTime modDt;
 
 	private ZonedDateTime deleteDt;

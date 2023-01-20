@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.safeinterior.board.dto.request.FraudPreventionGetRequest;
 import com.safeinterior.board.dto.request.FraudPreventionPatchRequest;
 import com.safeinterior.board.dto.response.FraudPreventionGetResponse;
-import com.safeinterior.board.dto.request.FraudPreventionGetRequest;
 import com.safeinterior.board.dto.response.FraudPreventionGetsResponse;
 import com.safeinterior.board.service.BoardService;
 
@@ -40,8 +40,6 @@ public class BoardController {
 
 	@PostMapping("/basic")
 	public ResponseEntity<Object> setBoard(FraudPreventionGetRequest requestDto) {
-		requestDto.getContent();
-		requestDto.getTitle();
 		boardService.setFraudPrevention(requestDto);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -82,8 +80,8 @@ public class BoardController {
 	@PatchMapping("/fraud-prevention/{id}")
 	@ApiOperation(value = "피해예방법 - 수정", notes = "")
 	@ApiImplicitParam(name = "id", value = "게시판 아이디", required = true)
-	public ResponseEntity<FraudPreventionGetResponse> patchFraudPrevention(HttpServletRequest request, @PathVariable long id,
-		FraudPreventionPatchRequest requestDto) {
+	public ResponseEntity<FraudPreventionGetResponse> patchFraudPrevention
+	(HttpServletRequest request, @PathVariable long id, FraudPreventionPatchRequest requestDto) {
 		boardService.patchFraudPrevention(id, requestDto);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

@@ -6,4 +6,13 @@ import lombok.Setter;
 @Setter
 @Getter
 public class FraudPreventionPatchRequest {
+	private long boardId;
+
+	private long userId;
+
+	private String title;
+
+	private String subTitle;
+
+	private String content;
 }
