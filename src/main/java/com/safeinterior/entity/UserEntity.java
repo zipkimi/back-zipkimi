@@ -25,22 +25,30 @@ public class UserEntity implements Serializable {
 	private long id;
 
 	@ManyToOne(targetEntity = CompanyEntity.class)
-	@JoinColumn(name = "id", insertable = false, updatable = false)
-	private CompanyEntity companyEntity;
+	@JoinColumn(name = "com_id", insertable = false, updatable = false)
+	private CompanyEntity company;
+
 	@Column(name = "email")
 	private String email;
+
 	@Column(name = "name")
 	private String name;
+
 	@Column(name = "pw")
 	private String pw;
+
 	@Column(name = "phone")
 	private String phone;
+
 	@Column(name = "token")
 	private String token;
+
 	@Column(name = "reg_dt")
 	private LocalDateTime regDt;
+
 	@Column(name = "mod_dt")
 	private LocalDateTime modDt;
-	@Column(name = "mod_user_id")
+
+	@Column(name = "mod_id")
 	private Long modUserId;
 }

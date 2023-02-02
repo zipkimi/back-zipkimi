@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -80,9 +81,20 @@ public class BoardController {
 	@PatchMapping("/fraud-prevention/{id}")
 	@ApiOperation(value = "피해예방법 - 수정", notes = "")
 	@ApiImplicitParam(name = "id", value = "게시판 아이디", required = true)
-	public ResponseEntity<FraudPreventionGetResponse> patchFraudPrevention
-	(HttpServletRequest request, @PathVariable long id, FraudPreventionPatchRequest requestDto) {
+	public ResponseEntity<FraudPreventionGetResponse> patchFraudPrevention(HttpServletRequest request,
+		@PathVariable long id, FraudPreventionPatchRequest requestDto) {
 		boardService.patchFraudPrevention(id, requestDto);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	/**
+	 * 피해예방법 - 삭제
+	 * */
+	@DeleteMapping("/fraud-prevention/{id}")
+	@ApiOperation(value = "피해예방법 - 삭제", notes = "")
+	@ApiImplicitParam(name = "id", value = "게시판 아이디", required = true)
+	public ResponseEntity<HttpStatus> deleteFraudPrevention(HttpServletRequest request, @PathVariable long id) {
+		boardService.deleteFraudPrevention(id);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

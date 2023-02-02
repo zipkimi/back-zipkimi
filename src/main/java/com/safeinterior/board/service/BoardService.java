@@ -77,4 +77,8 @@ public class BoardService {
 		board.setContent(requestDto.getContent() == null ? board.getContent() : requestDto.getContent());
 		boardRepository.save(board);
 	}
+
+	public void deleteFraudPrevention(long id) {
+		boardRepository.deleteById(id);
+	}
 }
