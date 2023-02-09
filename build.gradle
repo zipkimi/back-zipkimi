@@ -31,7 +31,8 @@ dependencies {
     implementation "io.springfox:springfox-boot-starter:3.0.0"
     implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '3.0.0'
     implementation group: 'io.springfox', name: 'springfox-swagger2', version: '3.0.0'
-
+    // jasypt (Java Simplified Encryption) - 기본 암호화 기능을 추가할 수 있는 자바 라이브러리
+    implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.4'
 }
 
 tasks.named('test') {
