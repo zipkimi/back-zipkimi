@@ -7,16 +7,19 @@ import java.util.Optional;
 import javax.transaction.Transactional;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import com.safeinterior.board.BoardRepository;
 import com.safeinterior.board.dto.request.FraudPreventionGetRequest;
 import com.safeinterior.board.dto.request.FraudPreventionPatchRequest;
 import com.safeinterior.board.dto.response.FraudPreventionGetResponse;
 import com.safeinterior.board.dto.response.FraudPreventionGetsResponse;
+import com.safeinterior.common.Message;
 import com.safeinterior.entity.BoardEntity;
 import com.safeinterior.exception.BadRequestException;
 import com.safeinterior.user.UserRepository;
@@ -29,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(rollbackOn = Exception.class)
 @Slf4j
 public class BoardService {
+	private final MessageSource messageSource;
 	private final BoardRepository boardRepository;
 	private final UserRepository userRepository;
 	private final ModelMapper modelMapper;
@@ -56,6 +60,7 @@ public class BoardService {
 	}
 
 	public FraudPreventionGetResponse getFraudPrevention(long id) {
+		Assert.notNull(id, Message.getMessage("message.error.invalid-parameter"));
 		Optional<BoardEntity> boardEntityOptional = boardRepository.findById(id);
 		FraudPreventionGetResponse response = null;
 		if (!boardEntityOptional.isEmpty()) {
