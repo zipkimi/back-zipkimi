@@ -10,4 +10,5 @@ import com.safeinterior.entity.BoardEntity;
 @Repository
 public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 	Page<BoardEntity> findByType(String type, Pageable pageable);
+	BoardEntity findByUserId(long userId);
 }

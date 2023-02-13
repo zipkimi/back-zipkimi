@@ -34,11 +34,6 @@ import lombok.AllArgsConstructor;
 public class BoardController {
 	private BoardService boardService;
 
-	@GetMapping("/hello")
-	public String hello() {
-		return "hello";
-	}
-
 	@PostMapping("/basic")
 	public ResponseEntity<Object> setBoard(FraudPreventionGetRequest requestDto) {
 		boardService.setFraudPrevention(requestDto);
@@ -67,6 +62,7 @@ public class BoardController {
 
 	/**
 	 * 피해예방법 - 상세 조회
+	 * @param id
 	 * */
 	@GetMapping("/fraud-prevention/{id}")
 	@ApiOperation(value = "피해예방법 - 상세 조회", notes = "")
@@ -77,6 +73,7 @@ public class BoardController {
 
 	/**
 	 * 피해예방법 - 수정
+	 * @param id
 	 * */
 	@PatchMapping("/fraud-prevention/{id}")
 	@ApiOperation(value = "피해예방법 - 수정", notes = "")
@@ -89,6 +86,7 @@ public class BoardController {
 
 	/**
 	 * 피해예방법 - 삭제
+	 * @param id
 	 * */
 	@DeleteMapping("/fraud-prevention/{id}")
 	@ApiOperation(value = "피해예방법 - 삭제", notes = "")
