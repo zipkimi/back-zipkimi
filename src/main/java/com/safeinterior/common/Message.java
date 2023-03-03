@@ -10,9 +10,13 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class Message {
-	private static MessageSource messageSource;
+	private final MessageSource messageSource;
 
-	public static String getMessage(String messageCode){
-		return messageSource.getMessage(messageCode, null, Locale.getDefault());
+	public String getMessage(String message) {
+		return messageSource.getMessage(message, null, Locale.getDefault());
+	}
+
+	public String getMessage(String message, String[] args) {
+		return messageSource.getMessage(message, args, Locale.getDefault());
 	}
 }
