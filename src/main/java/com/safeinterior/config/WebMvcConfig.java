@@ -1,14 +1,16 @@
 package com.safeinterior.config;
 
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import lombok.RequiredArgsConstructor;
-
 @Configuration
-@RequiredArgsConstructor
+// @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
 
 	/**
@@ -32,5 +34,19 @@ public class WebMvcConfig implements WebMvcConfigurer {
 				HttpMethod.PATCH.name(),
 				HttpMethod.OPTIONS.name());
 		WebMvcConfigurer.super.addCorsMappings(registry);
+	}
+
+	/**
+	 * 리소스 핸들러
+	 * 이미지, 자바스크립트, CSS 그리고 HTML 파일과 같은 정적인 리소스를 처리하는 핸들러 등록하는 방법
+	 * 스프링부트는 기본정적 리소스 핸들러와 캐싱 제공
+	 * */
+	@Override
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		registry.addResourceHandler("/mobile/**")
+			.addResourceLocations("classpath:/mobile/") // classpath == resource directory
+			.setCacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES))
+		// .resourceChain(true)
+		;
 	}
 }

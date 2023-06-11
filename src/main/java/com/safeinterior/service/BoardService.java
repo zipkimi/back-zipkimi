@@ -1,4 +1,4 @@
-package com.safeinterior.board.service;
+package com.safeinterior.service;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -12,14 +12,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.safeinterior.board.BoardRepository;
-import com.safeinterior.board.dto.request.FraudPreventionGetRequest;
-import com.safeinterior.board.dto.request.FraudPreventionPatchRequest;
-import com.safeinterior.board.dto.response.FraudPreventionGetResponse;
-import com.safeinterior.board.dto.response.FraudPreventionGetsResponse;
+import com.safeinterior.dto.request.FraudPreventionGetRequest;
+import com.safeinterior.dto.request.FraudPreventionPatchRequest;
+import com.safeinterior.dto.response.FraudPreventionGetResponse;
+import com.safeinterior.dto.response.FraudPreventionGetsResponse;
 import com.safeinterior.entity.BoardEntity;
 import com.safeinterior.exception.BadRequestException;
-import com.safeinterior.user.UserRepository;
+import com.safeinterior.repository.BoardRepository;
+import com.safeinterior.repository.UserRepository;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +58,7 @@ public class BoardService {
 	public FraudPreventionGetResponse getFraudPrevention(long id) {
 		Optional<BoardEntity> boardEntityOptional = boardRepository.findById(id);
 		FraudPreventionGetResponse response = null;
-		if (!boardEntityOptional.isEmpty()) {
+		if (boardEntityOptional.isPresent()) {
 			response = modelMapper.map(boardEntityOptional.get(), FraudPreventionGetResponse.class);
 		}
 		return response;

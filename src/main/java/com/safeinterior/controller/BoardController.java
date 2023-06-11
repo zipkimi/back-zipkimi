@@ -1,4 +1,4 @@
-package com.safeinterior.board.controller;
+package com.safeinterior.controller;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.safeinterior.board.dto.request.FraudPreventionGetRequest;
-import com.safeinterior.board.dto.request.FraudPreventionPatchRequest;
-import com.safeinterior.board.dto.response.FraudPreventionGetResponse;
-import com.safeinterior.board.dto.response.FraudPreventionGetsResponse;
-import com.safeinterior.board.service.BoardService;
+import com.safeinterior.dto.request.FraudPreventionGetRequest;
+import com.safeinterior.dto.request.FraudPreventionPatchRequest;
+import com.safeinterior.dto.response.FraudPreventionGetResponse;
+import com.safeinterior.dto.response.FraudPreventionGetsResponse;
+import com.safeinterior.service.BoardService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -44,7 +44,7 @@ public class BoardController {
 	 * 피해예방법 - 등록
 	 * */
 	@PostMapping("/fraud-prevention")
-	@ApiOperation(value = "피해예방법 - 등록", notes = "")
+	@ApiOperation(value = "피해예방법 - 등록")
 	public ResponseEntity<HttpStatus> setFraudPrevention(HttpServletRequest request, FraudPreventionGetRequest requestDto) {
 		boardService.setFraudPrevention(requestDto);
 		return new ResponseEntity<>(HttpStatus.OK);
@@ -54,7 +54,7 @@ public class BoardController {
 	 * 피해예방법 - 목록 조회
 	 * */
 	@GetMapping("/fraud-prevention")
-	@ApiOperation(value = "피해예방법 - 목록 조회", notes = "")
+	@ApiOperation(value = "피해예방법 - 목록 조회")
 	public ResponseEntity<Page<FraudPreventionGetsResponse>> getFraudPreventions(HttpServletRequest request,
 		@PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC) Pageable pageable) {
 		return new ResponseEntity<>(boardService.getFraudPreventions(pageable), HttpStatus.OK);
@@ -65,7 +65,7 @@ public class BoardController {
 	 * @param id
 	 * */
 	@GetMapping("/fraud-prevention/{id}")
-	@ApiOperation(value = "피해예방법 - 상세 조회", notes = "")
+	@ApiOperation(value = "피해예방법 - 상세 조회")
 	@ApiImplicitParam(name = "id", value = "게시판 아이디", required = true)
 	public ResponseEntity<FraudPreventionGetResponse> getFraudPrevention(HttpServletRequest request, @PathVariable long id) {
 		return new ResponseEntity<>(boardService.getFraudPrevention(id), HttpStatus.OK);
@@ -76,7 +76,7 @@ public class BoardController {
 	 * @param id
 	 * */
 	@PatchMapping("/fraud-prevention/{id}")
-	@ApiOperation(value = "피해예방법 - 수정", notes = "")
+	@ApiOperation(value = "피해예방법 - 수정")
 	@ApiImplicitParam(name = "id", value = "게시판 아이디", required = true)
 	public ResponseEntity<FraudPreventionGetResponse> patchFraudPrevention(HttpServletRequest request,
 		@PathVariable long id, FraudPreventionPatchRequest requestDto) {
@@ -89,7 +89,7 @@ public class BoardController {
 	 * @param id
 	 * */
 	@DeleteMapping("/fraud-prevention/{id}")
-	@ApiOperation(value = "피해예방법 - 삭제", notes = "")
+	@ApiOperation(value = "피해예방법 - 삭제")
 	@ApiImplicitParam(name = "id", value = "게시판 아이디", required = true)
 	public ResponseEntity<HttpStatus> deleteFraudPrevention(HttpServletRequest request, @PathVariable long id) {
 		boardService.deleteFraudPrevention(id);

@@ -1,4 +1,4 @@
-package com.safeinterior.user.service;
+package com.safeinterior.service;
 
 import javax.transaction.Transactional;
 

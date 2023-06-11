@@ -1,4 +1,4 @@
-package com.safeinterior.board.dto.request;
+package com.safeinterior.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
