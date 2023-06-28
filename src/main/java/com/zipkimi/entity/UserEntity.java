@@ -12,21 +12,28 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Getter
+// @Builder
+//@AllArgsConstructor
+// @RequiredArgsConstructor
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 public class UserEntity implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+	@Column(name="user_id")
+	private long userId;
 
-	@ManyToOne(targetEntity = CompanyEntity.class)
-	@JoinColumn(name = "com_id", insertable = false, updatable = false)
-	private CompanyEntity company;
+	@OneToOne
+	@JoinColumn(name = "sms_auth_id")
+	private SmsAuthEntity smsAuthEntity;
 
 	@Column(name = "email")
 	private String email;

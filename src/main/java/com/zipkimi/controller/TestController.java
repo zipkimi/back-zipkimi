@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.zipkimi.dto.request.TestDto;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
 
 @RestController
@@ -20,6 +21,7 @@ public class TestController {
 		return "hello world! :)";
 	}
 
+	@ApiOperation(value = "Health Check API")
 	@GetMapping("/health/{name}")
 	public String health(@PathVariable("name") TestDto dto) {
 		return "hello "+ dto.getName() +" world! :)";

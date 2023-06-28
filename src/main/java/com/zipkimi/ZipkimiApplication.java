@@ -6,10 +6,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @EnableJpaAuditing
 @SpringBootApplication
-public class SafeInteriorApplication {
+public class ZipkimiApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SafeInteriorApplication.class, args);
+		SpringApplication.run(ZipkimiApplication.class, args);
 	}
 
 }
