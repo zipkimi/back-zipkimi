@@ -29,7 +29,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
 
 	private ApiInfo apiInfo() {
 		return new ApiInfoBuilder()
-			.title("Safe-In Spring Boot REST API")
+			.title("집킴이 Spring Boot REST API")
 			.version("1.0.0")
 			.description("인테리어 안전 플랫폼 집킴이의 swagger api 입니다.")
 			.build();

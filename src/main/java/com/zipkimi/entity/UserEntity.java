@@ -9,7 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -26,6 +26,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "users")
 public class UserEntity implements Serializable {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="user_id")
@@ -38,24 +39,24 @@ public class UserEntity implements Serializable {
 	@Column(name = "email")
 	private String email;
 
+	@Column(name = "password")
+	private String password;
+
 	@Column(name = "name")
 	private String name;
 
-	@Column(name = "pw")
-	private String pw;
+	@Column(name="phone_number")
+	private String phoneNumber;
 
-	@Column(name = "phone")
-	private String phone;
+	//권한 : 일반, 시공사 등
+	@Column(name = "authority")
+	private String authority;
 
-	@Column(name = "token")
-	private String token;
+	@CreatedDate
+	@Column(name = "created_dt")
+	private LocalDateTime createdDt;
 
-	@Column(name = "reg_dt")
-	private LocalDateTime regDt;
-
-	@Column(name = "mod_dt")
-	private LocalDateTime modDt;
-
-	@Column(name = "mod_id")
-	private Long modUserId;
+	@LastModifiedDate
+	@Column(name = "updated_dt")
+	private LocalDateTime updatedDt;
 }
