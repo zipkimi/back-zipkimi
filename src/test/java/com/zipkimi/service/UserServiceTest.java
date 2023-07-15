@@ -1,72 +1,61 @@
 package com.zipkimi.service;
 
-import java.time.LocalDateTime;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
+import com.zipkimi.dto.request.SmsAuthNumberPostRequest;
 import com.zipkimi.entity.SmsAuthEntity;
 import com.zipkimi.entity.UserEntity;
 import com.zipkimi.repository.SmsAuthRepository;
 import com.zipkimi.repository.UserRepository;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 class UserServiceTest {
-	@Autowired
-	UserService userService;
 
-	@Autowired
-	UserRepository userRepository;
+    @Autowired
+    UserService userService;
 
-	@Autowired
-	SmsAuthRepository smsAuthRepository;
+    @Autowired
+    UserRepository userRepository;
 
-	@Test
-	public void userTest(){
-		// SmsAuthEntity smsAuth = SmsAuthEntity.builder()
-		// 	.smsAuthNumber("1234")
-		// 	.phoneNumber("01012345678")
-		// 	.isUse(true)
-		// 	.isAuthenticate(false)
-		// 	.createdDt(LocalDateTime.now())
-		// 	.updatedDt(LocalDateTime.now())
-		// 	.build();
-		// smsAuthRepository.save(smsAuth);
+    @Autowired
+    SmsAuthRepository smsAuthRepository;
 
-		SmsAuthEntity smsAuth = new SmsAuthEntity();
-		smsAuth.setSmsAuthNumber("1234");
-			smsAuth.setPhoneNumber("01012345678");
-			smsAuth.setIsUse(true);
-			smsAuth.setIsAuthenticate(false);
-			smsAuth.setCreatedDt(LocalDateTime.now());
-			smsAuth.setUpdatedDt(LocalDateTime.now());
-		smsAuthRepository.save(smsAuth);
+    @Test
+    public void userTest() {
+        SmsAuthEntity smsAuth = new SmsAuthEntity();
+        smsAuth.setSmsAuthNumber("1234");
+        smsAuth.setPhoneNumber("01012345678");
+        smsAuth.setIsAuthenticate(false);
+        smsAuthRepository.save(smsAuth);
 
-		// UserEntity user = UserEntity.builder()
-		// 	.name("유푸름")
-		// 	.email("ypr821@gmail.com")
-		// 	.password("test123")
-		// 	.phoneNumber("01012345678")
-		// 	.smsAuthEntity(smsAuth)
-		// 	.createdDt(LocalDateTime.now())
-		// 	.updatedDt(LocalDateTime.now())
-		// 	.build();
-		// userRepository.save(user);
+        UserEntity user = new UserEntity();
+        user.setName("유푸름");
+        user.setEmail("ypr821@gmail.com");
+        user.setPassword("test123");
+        user.setPhoneNumber("01012345678");
+        user.setBuilderId("general");
+        userRepository.save(user);
+    }
 
+    @Test
+    void sendSmsAuthNumberSuccessTest() {
+        // given
+        SmsAuthNumberPostRequest request = SmsAuthNumberPostRequest.builder()
+                .phoneNumber("").build();
+        // then                               // when
+        assertEquals("인증번호 전송 완료", userService.sendSmsAuthNumber(request).getResult());
+    }
 
-		UserEntity user = new UserEntity();
-		user.setName("유푸름");
-		user.setEmail("ypr821@gmail.com");
-		user.setPassword("test123");
-		user.setPhoneNumber("01012345678");
-		user.setSmsAuthEntity(smsAuth);
-		user.setCreatedDt(LocalDateTime.now());
-		user.setUpdatedDt(LocalDateTime.now());
-		user.setAuthority("general");
-		userRepository.save(user);
+    @Test
+    void sendSmsAuthNumberFailTest() {
+        // 이미 등록한 전화번호
+    }
 
-
-
-	}
+    @Test
+    void sendSmsAuthNumberWithoutPhoneNumberFailTest() {
+        // 요청시 입력받은 전화번호가 null 인 경우
+    }
 }
