@@ -7,22 +7,21 @@ assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+# 버그 리포트
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+## 버그 설명
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+> 버그에 대해 알려주세요
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+<br><br>
 
+## 버그 상세 내역
 
-**Additional context**
-Add any other context about the problem here.
+> 버그를 겪으신 상황을 알려주세요
+
+<br><br>
+
+## 참고자료
+>  참고한 자료를 올려주세요.
+
+<br><br>
