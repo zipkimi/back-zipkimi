@@ -1,5 +1,5 @@
 ---
-name: add Feature
+name: Add Feature
 about: 기능을 추가할 때 사용
 title: ''
 labels: ''
