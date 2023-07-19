@@ -21,6 +21,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final SmsAuthRepository smsAuthRepository;
     private final SmsService smsService;
+    private final Random random = new Random();
 
     public SmsAuthNumberPostResponse sendSmsAuthNumber(SmsAuthNumberPostRequest requestDto) {
         // 휴대폰 번호 유효성 검사 - 타입, 글자수, 이미 등록된 번호인지 체크
@@ -32,7 +33,7 @@ public class UserService {
                     .build();
         }
         // 난수 발생
-        String randomNumber = String.valueOf(new Random().nextInt(9999));
+        String randomNumber = String.valueOf(random.nextInt(9999));
         // DB table 에 insert
         SmsAuthEntity smsAuth = new SmsAuthEntity();
         smsAuth.setPhoneNumber(requestDto.getPhoneNumber());
