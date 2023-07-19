@@ -25,7 +25,7 @@ public class UserController {
 
     @ApiOperation(value = "SMS 인증번호 전송")
     @PostMapping(value = "/api/user/auth/sms/number")
-    public ResponseEntity<SmsAuthNumberPostResponse> 가(HttpServletRequest request,
+    public ResponseEntity<SmsAuthNumberPostResponse> sendSmsAuthNumber(HttpServletRequest request,
             @RequestBody @Validated SmsAuthNumberPostRequest requestDto) {
 /*
         차이점

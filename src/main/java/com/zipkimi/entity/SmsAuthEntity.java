@@ -27,6 +27,9 @@ public class SmsAuthEntity extends BaseEntity {
     @Column(name = "sms_auth_number")
     private String smsAuthNumber;
 
+    @Column(name = "content")
+    private String content;
+
     @Column(name = "is_use")
     private Boolean isUse;
 
