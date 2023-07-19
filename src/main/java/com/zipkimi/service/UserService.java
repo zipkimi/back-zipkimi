@@ -42,7 +42,7 @@ public class UserService {
                 + "정상처리 됩니다.");
         SmsAuthEntity smsAuthEntitySaved = smsAuthRepository.save(smsAuth);
         // SMS 전송 로직
-        pushSMSMessage(smsAuthEntitySaved);
+        smsService.pushSMSMessage(smsAuthEntitySaved);
         return SmsAuthNumberPostResponse.builder()
                 .result("인증번호를 전송하였습니다.")
                 .build();
