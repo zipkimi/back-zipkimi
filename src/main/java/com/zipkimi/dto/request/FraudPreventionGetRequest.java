@@ -2,12 +2,16 @@ package com.zipkimi.dto.request;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
-@Setter
 @Getter
+@Builder
 @ApiModel
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class FraudPreventionGetRequest {
 	@ApiModelProperty(name = "사용자 고유번호", example = "1", required = true)
 	private Long userId;
