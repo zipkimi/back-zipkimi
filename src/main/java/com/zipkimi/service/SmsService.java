@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zipkimi.common.sms.SmsMessage;
 import com.zipkimi.dto.request.SmsPostRequest;
 import com.zipkimi.dto.response.SmsPostResponse;
+import com.zipkimi.entity.SmsAuthEntity;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -37,7 +38,21 @@ public class SmsService {
     @Value("${naver-cloud-sms.senderPhone}")
     private String phone;
 
-    public SmsPostResponse send(SmsMessage message)
+    public SmsPostResponse pushSMSMessage(SmsAuthEntity smsAuth){
+        SmsMessage message = SmsMessage.builder()
+                .to(smsAuth.getPhoneNumber())
+                .content(smsAuth.getContent())
+                .build();
+        SmsPostResponse response = null;
+        try{
+            response = this.send(message);
+        }catch (Exception e){
+//          TODO Exception 수정  throw new BadRequestException("인증번호 전송을 실패했습니다.");
+        }
+        return response;
+    }
+
+    private SmsPostResponse send(SmsMessage message)
             throws JsonProcessingException, RestClientException, URISyntaxException, InvalidKeyException, NoSuchAlgorithmException {
         Long time = System.currentTimeMillis();
 
