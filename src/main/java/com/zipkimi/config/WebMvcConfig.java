@@ -52,7 +52,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(new LogInterceptor())
                 .order(1)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/health");
+                .excludePathPatterns("/health", "/swagger-ui.html");
 
     }
 }

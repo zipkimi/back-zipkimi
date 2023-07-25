@@ -10,6 +10,7 @@ import com.zipkimi.dto.request.SmsAuthNumberPostRequest;
 import com.zipkimi.entity.UserEntity;
 import com.zipkimi.repository.UserRepository;
 import javax.transaction.Transactional;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -30,6 +31,7 @@ class UserControllerTest {
     UserRepository userRepository;
 
     @Test
+    @DisplayName(value = "인증번호 전송 성공 테스트")
     void sendSmsAuthNumberSuccessTest() throws Exception {
         // given
         SmsAuthNumberPostRequest smsAuthNumberPostRequest = SmsAuthNumberPostRequest.builder()
@@ -37,16 +39,17 @@ class UserControllerTest {
                 .build();
         String json = objectMapper.writeValueAsString(smsAuthNumberPostRequest);
         // when
-        mockMvc.perform(post("/api/user/auth/sms/number")
+        mockMvc.perform(post("/api/v1/user/auth/sms/number")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(json))
                 .andDo(print())
                 // then
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result").value("인증번호를 전송하였습니다."));
+                .andExpect(jsonPath("$.message").value("인증번호를 전송하였습니다."));
     }
 
     @Test
+    @DisplayName(value = "인증번호 전송 실패 테스트")
     void sendSmsAuthNumberFailTest() throws Exception {
         // given
         SmsAuthNumberPostRequest smsAuthNumberPostRequest = SmsAuthNumberPostRequest.builder()
@@ -60,12 +63,17 @@ class UserControllerTest {
         userRepository.save(user);
         String json = objectMapper.writeValueAsString(smsAuthNumberPostRequest);
         // when
-        mockMvc.perform(post("/api/user/auth/sms/number")
+        mockMvc.perform(post("/api/v1/user/auth/sms/number")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(json))
                 .andDo(print())
                 // then
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result").value("이미 등록된 휴대폰 번호입니다."));
+                .andExpect(jsonPath("$.message").value("이미 등록된 휴대폰 번호입니다."));
+    }
+
+    @Test
+    void checkSmsAuthNumber() {
+        // TODO test 작성
     }
 }
