@@ -2,8 +2,9 @@ package com.zipkimi.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.zipkimi.dto.response.SmsPostResponse;
 import com.zipkimi.entity.SmsAuthEntity;
+import com.zipkimi.global.dto.response.SmsPostResponse;
+import com.zipkimi.global.service.SmsService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
