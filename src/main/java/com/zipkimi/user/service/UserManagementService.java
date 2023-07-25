@@ -1,15 +1,11 @@
 package com.zipkimi.user.service;
 
-import com.zipkimi.common.sms.SmsMessage;
 import com.zipkimi.dto.request.SmsAuthNumberGetRequest;
-import com.zipkimi.dto.request.SmsAuthNumberPostRequest;
 import com.zipkimi.dto.response.SmsAuthNumberGetResponse;
-import com.zipkimi.dto.response.SmsAuthNumberPostResponse;
-import com.zipkimi.dto.response.SmsPostResponse;
 import com.zipkimi.entity.SmsAuthEntity;
 import com.zipkimi.entity.UserEntity;
+import com.zipkimi.global.exception.BadRequestException;
 import com.zipkimi.global.service.SmsService;
-import com.zipkimi.exception.BadRequestException;
 import com.zipkimi.repository.SmsAuthRepository;
 import com.zipkimi.repository.UserRepository;
 import com.zipkimi.user.dto.request.SmsAuthNumberPostRequest;
@@ -34,18 +30,13 @@ public class UserManagementService {
 
     public SmsAuthNumberPostResponse sendSmsAuthNumber(SmsAuthNumberPostRequest requestDto) {
         // 휴대폰 번호 유효성 검사 - 타입, 글자수, 이미 등록된 번호인지 체크
-        String phoneNumber = requestDto.getPhoneNumber();
-        if (phoneNumber.contains("-") || phoneNumber.contains(" ")) {
-            phoneNumber = phoneNumber.replace("-", "");
-            phoneNumber = phoneNumber.replace(" ", "");
-        }
+        String phoneNumber = requestDto.getPhoneNumber().replaceAll("\\D", "");
         if (phoneNumber.length() != 11) {
             return SmsAuthNumberPostResponse.builder()
                     .message("입력한 휴대전화 번호를 확인해주세요.")
                     .build();
         }
-        Optional<UserEntity> userEntityOptional = userRepository.findByPhoneNumberAndIsUseIsTrue(
-                phoneNumber);
+        Optional<UserEntity> userEntityOptional = userRepository.findByPhoneNumberAndIsUseIsTrue(phoneNumber);
         if (userEntityOptional.isPresent()) {
             return SmsAuthNumberPostResponse.builder()
                     .message("이미 등록된 휴대폰 번호입니다.")
@@ -69,21 +60,6 @@ public class UserManagementService {
                 .message("인증번호를 전송하였습니다.")
                 .smsAuthId(smsAuthEntitySaved.getSmsAuthId())
                 .build();
-    }
-
-    private SmsPostResponse pushSMSMessage(SmsAuthEntity smsAuth) {
-        SmsMessage message = SmsMessage.builder()
-                .to(smsAuth.getPhoneNumber())
-                .content("본인확인 인증번호 (" + smsAuth.getSmsAuthNumber() + ")입력시 \n"
-                        + "정상처리 됩니다.")
-                .build();
-        SmsPostResponse response = null;
-        try {
-            response = smsService.send(message);
-        } catch (Exception e) {
-            throw new BadRequestException("인증번호 전송을 실패했습니다.");
-        }
-        return response;
     }
 
     public SmsAuthNumberGetResponse checkSmsAuthNumber(SmsAuthNumberGetRequest requestDto) {

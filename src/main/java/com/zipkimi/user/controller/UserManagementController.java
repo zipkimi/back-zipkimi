@@ -1,10 +1,7 @@
 package com.zipkimi.user.controller;
 
 import com.zipkimi.dto.request.SmsAuthNumberGetRequest;
-import com.zipkimi.dto.request.SmsAuthNumberPostRequest;
 import com.zipkimi.dto.response.SmsAuthNumberGetResponse;
-import com.zipkimi.dto.response.SmsAuthNumberPostResponse;
-import com.zipkimi.service.UserService;
 import com.zipkimi.user.dto.request.SmsAuthNumberPostRequest;
 import com.zipkimi.user.dto.response.SmsAuthNumberPostResponse;
 import com.zipkimi.user.service.UserManagementService;
@@ -55,7 +52,7 @@ public class UserManagementController {
     public ResponseEntity<SmsAuthNumberGetResponse> checkSmsAuthNumber(HttpServletRequest request,
            SmsAuthNumberGetRequest requestDto){
         // SMS 인증번호 입력 -> 확인 결과 응답
-        return ResponseEntity.status(HttpStatus.OK).body(userService.checkSmsAuthNumber(requestDto));
+        return ResponseEntity.status(HttpStatus.OK).body(userManagementService.checkSmsAuthNumber(requestDto));
     }
 
 
