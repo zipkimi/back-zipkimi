@@ -1,14 +1,14 @@
 package com.zipkimi.user.service;
 
-import com.zipkimi.dto.request.SmsAuthNumberGetRequest;
-import com.zipkimi.dto.response.SmsAuthNumberGetResponse;
 import com.zipkimi.entity.SmsAuthEntity;
 import com.zipkimi.entity.UserEntity;
 import com.zipkimi.global.exception.BadRequestException;
 import com.zipkimi.global.service.SmsService;
 import com.zipkimi.repository.SmsAuthRepository;
 import com.zipkimi.repository.UserRepository;
+import com.zipkimi.user.dto.request.SmsAuthNumberGetRequest;
 import com.zipkimi.user.dto.request.SmsAuthNumberPostRequest;
+import com.zipkimi.user.dto.response.SmsAuthNumberGetResponse;
 import com.zipkimi.user.dto.response.SmsAuthNumberPostResponse;
 import java.time.LocalDateTime;
 import java.util.Optional;

@@ -1,8 +1,8 @@
 package com.zipkimi.user.controller;
 
-import com.zipkimi.dto.request.SmsAuthNumberGetRequest;
-import com.zipkimi.dto.response.SmsAuthNumberGetResponse;
+import com.zipkimi.user.dto.request.SmsAuthNumberGetRequest;
 import com.zipkimi.user.dto.request.SmsAuthNumberPostRequest;
+import com.zipkimi.user.dto.response.SmsAuthNumberGetResponse;
 import com.zipkimi.user.dto.response.SmsAuthNumberPostResponse;
 import com.zipkimi.user.service.UserManagementService;
 import io.swagger.annotations.Api;
@@ -29,7 +29,7 @@ public class UserManagementController {
     private final UserManagementService userManagementService;
 
     @ApiOperation(value = "SMS 인증번호 전송")
-    @PostMapping(value = "/api/v1/user/auth/sms/number")
+    @PostMapping(value = "/api/v1/userMgmt/users/sms")
     public ResponseEntity<SmsAuthNumberPostResponse> sendSmsAuthNumber(HttpServletRequest request,
             @RequestBody @Validated SmsAuthNumberPostRequest requestDto) {
 /*      차이점
@@ -48,9 +48,9 @@ public class UserManagementController {
     }
 
     @ApiOperation(value = "SMS 인증번호 확인")
-    @GetMapping(value = "/api/v1/user/auth/sms/number", produces = "application/json; charset=utf8")
+    @GetMapping(value = "/api/v1/userMgmt/users/sms/{id}", produces = "application/json; charset=utf8")
     public ResponseEntity<SmsAuthNumberGetResponse> checkSmsAuthNumber(HttpServletRequest request,
-           SmsAuthNumberGetRequest requestDto){
+           @RequestBody SmsAuthNumberGetRequest requestDto){
         // SMS 인증번호 입력 -> 확인 결과 응답
         return ResponseEntity.status(HttpStatus.OK).body(userManagementService.checkSmsAuthNumber(requestDto));
     }

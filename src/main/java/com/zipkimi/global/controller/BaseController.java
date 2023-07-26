@@ -1,4 +1,4 @@
-package com.zipkimi.controller;
+package com.zipkimi.global.controller;
 
 import org.springframework.web.bind.annotation.ControllerAdvice;
 

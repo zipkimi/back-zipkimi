@@ -1,7 +1,6 @@
-package com.zipkimi.exception;
+package com.zipkimi.global.exception;
 
-import com.zipkimi.dto.response.BaseResponse;
-import com.zipkimi.global.exception.BadRequestException;
+import com.zipkimi.global.dto.response.BaseResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

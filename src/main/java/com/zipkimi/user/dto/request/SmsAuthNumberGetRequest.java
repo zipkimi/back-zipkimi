@@ -1,15 +1,17 @@
-package com.zipkimi.dto.request;
+package com.zipkimi.user.dto.request;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @Builder
 @ApiModel
+@NoArgsConstructor
 @RequiredArgsConstructor
 public class SmsAuthNumberGetRequest {
 

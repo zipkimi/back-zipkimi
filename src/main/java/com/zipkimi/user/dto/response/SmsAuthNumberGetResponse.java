@@ -1,4 +1,4 @@
-package com.zipkimi.dto.response;
+package com.zipkimi.user.dto.response;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -12,8 +12,8 @@ import lombok.RequiredArgsConstructor;
 @ApiModel
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class BaseResponse {
+public class SmsAuthNumberGetResponse {
 
-    @ApiModelProperty(name = "응답 메시지", example = "본인 인증에 성공했습니다., 인증번호를 확인해주세요.")
+    @ApiModelProperty(name = "결과", example = "본인 인증에 성공했습니다., 인증번호를 확인해주세요.", required = true)
     private String message;
 }

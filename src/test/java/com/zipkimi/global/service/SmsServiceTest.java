@@ -1,10 +1,9 @@
-package com.zipkimi.service;
+package com.zipkimi.global.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.zipkimi.entity.SmsAuthEntity;
 import com.zipkimi.global.dto.response.SmsPostResponse;
-import com.zipkimi.global.service.SmsService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 class SmsServiceTest {
+
     @Autowired
     SmsService smsService;
 
@@ -36,4 +36,5 @@ class SmsServiceTest {
         assertEquals("202" , response.getStatusCode());
         assertEquals("success" , response.getStatusName());
     }
+
 }
