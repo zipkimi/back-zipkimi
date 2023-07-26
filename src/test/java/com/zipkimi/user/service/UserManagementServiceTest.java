@@ -38,6 +38,7 @@ class UserManagementServiceTest {
     //TODO test code수정 필요 - @InjectMocks사용하여 데이터 변화 영향없이 일관적인 테스트하도록 수정
 
     @Test
+    @DisplayName(value = "인증번호 전송 성공 테스트")
     void sendSmsAuthNumberSuccessTest() {
         // given
         SmsAuthNumberPostRequest request = SmsAuthNumberPostRequest.builder()
@@ -64,7 +65,7 @@ class UserManagementServiceTest {
     }
 
     @Test
-    @DisplayName(value = "")
+    @DisplayName(value = "인증번호 전송 실패 테스트 - 이미 등록한 전화번호 케이스")
     void sendSmsAuthNumberWithAlreadyJoinedPhoneNumberFailTest() {
         // 휴대폰 번호 유효성 검사 실패 - 이미 등록한 전화번호
         // given
@@ -172,7 +173,6 @@ class UserManagementServiceTest {
                 , "인증번호를 확인해주세요.");
     }
 
-    //TODO -성공테스트 작성
     @Test
     @DisplayName(value = "인증번호 확인 성공 테스트")
     void checkSmsAuthNumberSuccessTest() {
