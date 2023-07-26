@@ -1,10 +1,11 @@
 package com.zipkimi.global.exception;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
+@Getter
 public class BadRequestException extends RuntimeException{
-	// TODO Exception 구성 공부 하고 적용하기
-	// TODO Controller Response 공부하고 적용하기
+    private final String message;
 
 }

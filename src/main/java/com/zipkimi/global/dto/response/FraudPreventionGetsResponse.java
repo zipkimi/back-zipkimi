@@ -6,15 +6,13 @@ import java.time.ZonedDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
-@Setter
 @Getter
 @Builder
 @ApiModel
-@NoArgsConstructor
 @AllArgsConstructor
+@RequiredArgsConstructor
 public class FraudPreventionGetsResponse {
 	@ApiModelProperty(name = "게시글 고유번호", example = "1", required = true)
 	private Long id;

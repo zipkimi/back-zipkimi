@@ -13,9 +13,17 @@ import lombok.RequiredArgsConstructor;
 @ApiModel
 @NoArgsConstructor
 @RequiredArgsConstructor
-public class SmsAuthNumberPostRequest {
+public class SmsAuthNumberGetRequest {
+
+    @NonNull
+    @ApiModelProperty(name = "SMS 인증 아이디", example = "123")
+    private long smsAuthId;
+
     @NonNull
     @ApiModelProperty(name = "휴대폰 번호", example = "01000000000", required = true)
     private String phoneNumber;
 
+    @NonNull
+    @ApiModelProperty(name = "인증 번호", example = "0000", required = true)
+    private String smsAuthNumber;
 }
