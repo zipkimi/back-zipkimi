@@ -14,11 +14,11 @@ import org.springframework.lang.NonNull;
 public class PassResetSmsAuthNumberPostRequest {
 
     @NonNull
-    @ApiModelProperty(value = "휴대폰번호", name = "phoneNumber", notes = "이곳에 휴대폰번호를 넣어주세요", example = "01000000000", required = true)
+    @ApiModelProperty(value = "휴대폰번호", name = "phoneNumber", example = "01000000000", required = true)
     private String phoneNumber;
 
     @NonNull
-    @ApiModelProperty(value = "이메일", name = "email", notes = "이곳에 이메일을 넣어주세요", example = "test@gmail.com", required = true)
+    @ApiModelProperty(value = "이메일", name = "email", example = "test@gmail.com", required = true)
     private String email;
 
 }

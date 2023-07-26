@@ -32,11 +32,11 @@ public class UserLoginService {
     public String getEmailByPhoneNumber(String phoneNumber) {
 
         // 휴대폰 번호로 일치하는 회원 조회
-        UserEntity user = userRepository.findByPhoneNumber(phoneNumber);
+        Optional<UserEntity> user = userRepository.findByPhoneNumber(phoneNumber);
 
         // 휴대폰 번호로 가입된 회원이 존재할 경우 : Email 반환
         // 휴대폰 번호로 가입된 회원이 존재하지 않을 경우 : null 반환
-        return user != null ? user.getEmail() : null;
+        return user.map(UserEntity::getEmail).orElse(null);
     }
 
     // SMS 인증번호 검증
@@ -50,24 +50,24 @@ public class UserLoginService {
             SmsAuthNumberPostRequest requestDto) {
 
         // 휴대폰 번호로 일치하는 회원 조회
-        UserEntity user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber());
+        Optional<UserEntity> user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber());
 
-        if (user == null) {
+        if (user.isEmpty()) {
             return SendFindSmsAuthNumberPostResponse.builder()
                     .result("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)")
                     .build();
         }
 
         // 인증번호 생성 : 4자리(중복 x)
-        String randomNumber = numberGen(4, 2);
+        String smsAuthNumber = generateNumber(4, 2);
 
         SmsAuthEntity smsAuth = new SmsAuthEntity();
         smsAuth.setPhoneNumber(requestDto.getPhoneNumber());
-        smsAuth.setSmsAuthNumber(randomNumber);
+        smsAuth.setSmsAuthNumber(smsAuthNumber);
         smsAuth.setIsAuthenticate(false);
 
         // SMS 내용 설정
-        smsAuth.setContent("[집킴이] 아이디 찾기 인증번호는 [" + randomNumber + "] 입니다. 인증번호를 정확히 입력해주세요.");
+        smsAuth.setContent("[집킴이] 아이디 찾기 인증번호는 [" + smsAuthNumber + "] 입니다. 인증번호를 정확히 입력해주세요.");
 
         // DB 테이블에 insert
         SmsAuthEntity smsAuthEntitySaved = smsAuthRepository.save(smsAuth);
@@ -96,8 +96,12 @@ public class UserLoginService {
     
     //임시 비밀번호로 비밀번호 업데이트
     public void updatePassword(String email, String newPassword){
-        UserEntity user = userRepository.findByEmail(email);
-        user.setPassword(newPassword);
+        Optional<UserEntity> user = userRepository.findByEmail(email);
+
+        if (user.isPresent()) {
+            UserEntity userEntity = user.get();
+            userEntity.setPassword(newPassword);
+        }
     }
 
     // SMS 인증번호 전송
@@ -105,25 +109,25 @@ public class UserLoginService {
             PassResetSmsAuthNumberPostRequest requestDto) {
 
             // 휴대폰 번호로 가입된 회원 확인
-            UserEntity user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber());
+            Optional<UserEntity> user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber());
 
-            if (user == null) {
+            if (user.isEmpty()) {
                 return SendFindSmsAuthNumberPostResponse.builder()
-                        .result("등록되지 않은 회원입니다.")
+                        .result("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)")
                         .build();
             }
 
             // 인증번호 생성 : 4자리(중복 x)
-            String randomNumber = numberGen(4, 2);
+            String smsAuthNumber = generateNumber(4, 2);
 
             // DB 테이블에 insert
             SmsAuthEntity smsAuth = new SmsAuthEntity();
             smsAuth.setPhoneNumber(requestDto.getPhoneNumber());
-            smsAuth.setSmsAuthNumber(randomNumber);
+            smsAuth.setSmsAuthNumber(smsAuthNumber);
             smsAuth.setIsAuthenticate(false);
 
             // SMS 내용 설정
-            smsAuth.setContent("[집킴이] 비밀번호 찾기 인증번호는 [" + randomNumber + "] 입니다. 인증번호를 정확히 입력해주세요.");
+            smsAuth.setContent("[집킴이] 비밀번호 찾기 인증번호는 [" + smsAuthNumber + "] 입니다. 인증번호를 정확히 입력해주세요.");
 
             SmsAuthEntity smsAuthEntitySaved = smsAuthRepository.save(smsAuth);
 
@@ -140,10 +144,10 @@ public class UserLoginService {
 
 
     //난수로 인증번호 생성
-    public String numberGen(int len, int dupCd ) {
+    public String generateNumber(int len, int dupCd ) {
 
         //난수가 저장될 변수
-        String numStr = "";
+        StringBuilder numStr = new StringBuilder();
 
         for(int i=0;i<len;i++) {
 
@@ -152,19 +156,19 @@ public class UserLoginService {
 
             if(dupCd==1) {
                 //중복 허용시 numStr에 append
-                numStr += ran;
+                numStr.append(ran);
             }else if(dupCd==2) {
                 //중복을 허용하지 않을시 중복된 값이 있는지 검사한다
-                if(!numStr.contains(ran)) {
+                if(!numStr.toString().contains(ran)) {
                     //중복된 값이 없으면 numStr에 append
-                    numStr += ran;
+                    numStr.append(ran);
                 }else {
                     //생성된 난수가 중복되면 루틴을 다시 실행한다
                     i-=1;
                 }
             }
         }
-        return numStr;
+        return numStr.toString();
     }
 
     //임시 비밀번호 생성

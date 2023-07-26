@@ -31,7 +31,7 @@ class UserLoginControllerTest {
     // ************* 아이디 찾기 *************
 
     @Test
-    void testSendFindIdSmsAuthNumber_Success(){
+    void sendFindIdSmsAuthNumberSuccessTest(){
 
         //given
         SmsAuthNumberPostRequest requestDto = new SmsAuthNumberPostRequest("01094342762");
@@ -48,7 +48,7 @@ class UserLoginControllerTest {
     }
 
     @Test
-    void testSendFindIdSmsAuthNumber_Failure() {
+    void sendFindIdSmsAuthNumberFailureTest() {
 
         //given
         String unregisteredPhoneNumber = "01094342762";
@@ -71,7 +71,7 @@ class UserLoginControllerTest {
     }
 
     @Test
-    void testVerifySmsAuthAndFindId_Success() {
+    void verifySmsAuthAndFindIdSuccessTest() {
 
         // given
         FindIdVerifySmsRequest requestDto = new FindIdVerifySmsRequest("01012345678", "1234");
@@ -87,7 +87,7 @@ class UserLoginControllerTest {
         assertEquals("회원님의 아이디는 'example@example.com' 입니다.", response.getBody());
     }
     @Test
-    void testVerifySmsAuthAndFindId_Failure() {
+    void verifySmsAuthAndFindIdFailureTest() {
 
         // given
         FindIdVerifySmsRequest requestDto = new FindIdVerifySmsRequest("01012345678", "1111");
@@ -103,7 +103,7 @@ class UserLoginControllerTest {
     }
 
     @Test
-    void testVerifySmsAuthAndFindId_NotFound() {
+    void verifySmsAuthAndFindIdNotFoundTest() {
 
         // given
         FindIdVerifySmsRequest requestDto = new FindIdVerifySmsRequest("01012345678", "0000");

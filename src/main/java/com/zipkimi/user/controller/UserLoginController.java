@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,14 +29,14 @@ public class UserLoginController {
     // ************* 아이디 찾기 *************
 
     @ApiOperation(value = "아이디 찾기 - SMS 인증번호 전송")
-    @PostMapping(value = "/api/v1/users/find-id/auth/sms/send")
+    @PostMapping(value = "/api/v1/users/find-id/sms")
     public ResponseEntity<SendFindSmsAuthNumberPostResponse> sendFindIdSmsAuthNumber(@RequestBody @Validated SmsAuthNumberPostRequest requestDto) {
         SendFindSmsAuthNumberPostResponse response = loginService.sendFindIdSmsAuthNumber(requestDto);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @ApiOperation(value = "아이디 찾기 - SMS 인증번호 확인 및 아이디 찾기")
-    @PostMapping(value = "/api/v1/users/find-id/auth/sms/verify", produces = "application/json; charset=utf8")
+    @GetMapping(value = "/api/v1/users/find-id/sms/verify", produces = "application/json; charset=utf8")
     public ResponseEntity<String> verifySmsAuthAndFindId(@RequestBody FindIdVerifySmsRequest requestDto){
         
         // 0. 입력받은 휴대폰번호와 인증번호
@@ -63,7 +64,7 @@ public class UserLoginController {
     // ************* 비밀번호 찾기 *************
 
     @ApiOperation(value = "비밀번호 찾기 - SMS 인증번호 전송")
-    @PostMapping(value = "/api/v1/users/find-pw/auth/sms/send")
+    @PostMapping(value = "/api/v1/users/find-pw/sms")
     public ResponseEntity<SendFindSmsAuthNumberPostResponse> sendFindPwSmsAuthNumber(@RequestBody @Validated PassResetSmsAuthNumberPostRequest requestDto) {
         SendFindSmsAuthNumberPostResponse response = loginService.sendFindPwSmsAuthNumber(requestDto);
         return ResponseEntity.status(HttpStatus.OK).body(response);

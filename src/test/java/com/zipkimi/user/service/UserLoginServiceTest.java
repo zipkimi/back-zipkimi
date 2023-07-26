@@ -6,13 +6,17 @@ import com.zipkimi.entity.UserEntity;
 import com.zipkimi.global.service.SmsService;
 import com.zipkimi.repository.SmsAuthRepository;
 import com.zipkimi.repository.UserRepository;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
+@Transactional
 class UserLoginServiceTest {
 
     @Mock
@@ -28,7 +32,7 @@ class UserLoginServiceTest {
     private UserLoginService loginService;
 
     @Test
-    void getEmailByPhoneNumber_ExistingUser_ReturnEmail(){
+    void getEmailByPhoneNumberExistingUserReturnEmailTest(){
 
         //given
         //가상의 휴대폰 번호, 유저 객체 생성
@@ -39,7 +43,7 @@ class UserLoginServiceTest {
         user.setEmail("abc@gmail.com");
 
         //when
-        Mockito.when(userRepository.findByPhoneNumber(phoneNumber)).thenReturn(user);
+        Mockito.when(userRepository.findByPhoneNumber(phoneNumber)).thenReturn(Optional.of(user));
 
         //then
         String result = loginService.getEmailByPhoneNumber(phoneNumber);
@@ -48,7 +52,7 @@ class UserLoginServiceTest {
     }
 
     @Test
-    void getEmailByPhoneNumber_NonExistingUser_ReturnNull(){
+    void getEmailByPhoneNumberNonExistingUserReturnNullTest(){
 
         //given
         String phoneNumber = "01012345678";
