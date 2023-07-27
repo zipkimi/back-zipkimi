@@ -14,7 +14,7 @@ import lombok.Setter;
 @ApiModel
 @NoArgsConstructor
 @AllArgsConstructor
-public class SendFindSmsAuthNumberPostResponse {
+public class FindSmsAuthNumberGetResponse {
 
     @ApiModelProperty(name = "결과", example = "인증번호를 전송하였습니다. / 등록되지 않은 회원입니다.", required = true)
     private String result;
