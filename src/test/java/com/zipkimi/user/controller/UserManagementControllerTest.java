@@ -11,7 +11,6 @@ import com.zipkimi.entity.SmsAuthEntity;
 import com.zipkimi.entity.UserEntity;
 import com.zipkimi.repository.SmsAuthRepository;
 import com.zipkimi.repository.UserRepository;
-import com.zipkimi.user.dto.request.SmsAuthNumberGetRequest;
 import com.zipkimi.user.dto.request.SmsAuthNumberPostRequest;
 import java.time.LocalDateTime;
 import javax.transaction.Transactional;
@@ -22,6 +21,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 @Transactional
 @SpringBootTest
@@ -80,6 +81,7 @@ class UserManagementControllerTest {
     }
 
     @Test
+    @DisplayName(value = "인증번호 전송 실패 테스트")
     void checkSmsAuthNumberSuccessTest() throws Exception {
         // given
         SmsAuthEntity smsAuth = new SmsAuthEntity();
@@ -93,17 +95,14 @@ class UserManagementControllerTest {
         smsAuth.setContent("본인확인 인증번호 (" + smsAuth.getSmsAuthNumber() + ")입력시 \n"
                 + "정상처리 됩니다.");
         SmsAuthEntity savedSmsAuth = smsAuthRepository.save(smsAuth);
-
-        SmsAuthNumberGetRequest request = SmsAuthNumberGetRequest.builder()
-                .phoneNumber("01097050821")
-                .smsAuthNumber("0000")
-                .smsAuthId(savedSmsAuth.getSmsAuthId())
-                .build();
-        String json = objectMapper.writeValueAsString(request);
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("phoneNumber", "01097050821");
+        params.add("smsAuthNumber", "0000");
+        params.add("smsAuthId", String.valueOf(savedSmsAuth.getSmsAuthId()));
         // when
         mockMvc.perform(get("/api/v1/userMgmt/users/sms/" + savedSmsAuth.getSmsAuthId())
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(json))
+                        .params(params)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andDo(print())
                 // then
                 .andExpect(status().isOk())

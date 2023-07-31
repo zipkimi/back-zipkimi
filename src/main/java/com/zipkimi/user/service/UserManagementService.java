@@ -11,6 +11,7 @@ import com.zipkimi.user.dto.request.SmsAuthNumberPostRequest;
 import com.zipkimi.user.dto.response.SmsAuthNumberGetResponse;
 import com.zipkimi.user.dto.response.SmsAuthNumberPostResponse;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import javax.transaction.Transactional;
@@ -30,7 +31,7 @@ public class UserManagementService {
 
     public SmsAuthNumberPostResponse sendSmsAuthNumber(SmsAuthNumberPostRequest requestDto) {
         // 휴대폰 번호 유효성 검사 - 타입, 글자수, 이미 등록된 번호인지 체크
-        String phoneNumber = requestDto.getPhoneNumber().replaceAll("\\D", "");
+        String phoneNumber = requestDto.getPhoneNumber().replaceAll("\\D", ""); // "\\D" 정규식을 사용하여 숫자이외의 문자는 모두 ""으로 변경
         if (phoneNumber.length() != 11) {
             return SmsAuthNumberPostResponse.builder()
                     .message("입력한 휴대전화 번호를 확인해주세요.")
@@ -42,6 +43,13 @@ public class UserManagementService {
                     .message("이미 등록된 휴대폰 번호입니다.")
                     .build();
         }
+        // 이전 전송 이력이 있는 경우 -> 이전이력 isUse false 처리후 새로 insert
+        List<SmsAuthEntity> smsAuthEntities = smsAuthRepository.findByPhoneNumberAndIsAuthenticateFalseAndIsUseTrue(
+                phoneNumber);
+        for (SmsAuthEntity entity : smsAuthEntities) {
+            entity.setIsUse(false);
+            smsAuthRepository.save(entity);
+        }
         // 난수 발생
         String randomNumber = String.valueOf(random.nextInt(9999));
         // DB table 에 insert
@@ -49,6 +57,7 @@ public class UserManagementService {
         smsAuth.setPhoneNumber(requestDto.getPhoneNumber());
         smsAuth.setSmsAuthNumber(randomNumber);
         smsAuth.setIsAuthenticate(false);
+        smsAuth.setIsUse(true);
         // TODO Type 값 설정 필요
         smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(5L));
         smsAuth.setContent("본인확인 인증번호 (" + smsAuth.getSmsAuthNumber() + ")입력시 \n"

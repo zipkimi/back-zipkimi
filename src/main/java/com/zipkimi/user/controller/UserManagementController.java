@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,9 +49,8 @@ public class UserManagementController {
     }
 
     @ApiOperation(value = "SMS 인증번호 확인")
-    @GetMapping(value = "/api/v1/userMgmt/users/sms/{id}", produces = "application/json; charset=utf8")
-    public ResponseEntity<SmsAuthNumberGetResponse> checkSmsAuthNumber(HttpServletRequest request,
-           @RequestBody SmsAuthNumberGetRequest requestDto){
+    @GetMapping(value = "/api/v1/userMgmt/users/sms/{id}")
+    public ResponseEntity<SmsAuthNumberGetResponse> checkSmsAuthNumber(HttpServletRequest request, @ModelAttribute SmsAuthNumberGetRequest requestDto){
         // SMS 인증번호 입력 -> 확인 결과 응답
         return ResponseEntity.status(HttpStatus.OK).body(userManagementService.checkSmsAuthNumber(requestDto));
     }
