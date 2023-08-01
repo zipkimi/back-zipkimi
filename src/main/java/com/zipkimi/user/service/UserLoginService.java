@@ -105,10 +105,16 @@ public class UserLoginService {
                     .build();
         }
 
-        // 만료되지 않은 인증번호 있는지 조회
+        // 만료되지 않은 SMS 인증번호 있는지 조회
         SmsAuthEntity existingSmsAuth =
-                smsAuthRepository.findValidSmsAuthByPhoneNumber(requestDto.getPhoneNumber(),
-                        LocalDateTime.now());
+                smsAuthRepository.findValidSmsAuthByPhoneNumberAndType(requestDto.getPhoneNumber(),
+                        LocalDateTime.now(), "findId");
+
+        if (existingSmsAuth != null) {
+            return FindSmsAuthNumberPostResponse.builder()
+                    .result("유효한 SMS 인증번호가 있습니다. 인증번호를 입력해주세요.")
+                    .build();
+        }
 
         String randomNumber;
         SmsAuthEntity smsAuthEntitySaved = null;
@@ -164,8 +170,14 @@ public class UserLoginService {
 
         // 만료되지 않은 SMS 인증번호 있는지 조회
         SmsAuthEntity existingSmsAuth =
-                smsAuthRepository.findValidSmsAuthByPhoneNumber(requestDto.getPhoneNumber(),
-                        LocalDateTime.now());
+                smsAuthRepository.findValidSmsAuthByPhoneNumberAndType(requestDto.getPhoneNumber(),
+                        LocalDateTime.now(), "findPw");
+
+        if (existingSmsAuth != null) {
+            return FindSmsAuthNumberPostResponse.builder()
+                    .result("유효한 SMS 인증번호가 있습니다. 인증번호를 입력해주세요.")
+                    .build();
+        }
 
         String randomNumber;
         SmsAuthEntity smsAuthEntitySaved = null;

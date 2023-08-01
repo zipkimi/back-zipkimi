@@ -30,7 +30,7 @@ public class UserLoginController {
 
     // ************* 아이디 찾기 *************
 
-    @ApiOperation(value = "아이디 찾기 - SMS 인증번호 전송")
+    @ApiOperation(value = "아이디 찾기 - SMS 인증번호 전송", notes = "아이디 찾기 시 SMS 인증 번호를 전송합니다.")
     @PostMapping(value = "/api/v1/users/find-id/sms")
     public ResponseEntity<FindSmsAuthNumberPostResponse> sendFindIdSmsAuthNumber(
             @RequestBody @Validated SmsAuthNumberPostRequest requestDto) {
@@ -39,8 +39,8 @@ public class UserLoginController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @ApiOperation(value = "아이디 찾기 - SMS 인증번호 확인 및 아이디 찾기")
-    @GetMapping(value = "/api/v1/users/find-id/sms/{smsAuthId}")
+    @ApiOperation(value = "아이디 찾기 - SMS 인증번호 확인 및 아이디 찾기", notes = "아이디 찾기 시 SMS 인증 번호를 확인한 후 아이디를 찾습니다.")
+    @GetMapping(value = "/api/v1/users/find-id/sms/{id}")
     public ResponseEntity<FindSmsAuthNumberGetResponse> checkFindIdSmsAuth(
             @ModelAttribute FindIdCheckSmsGetRequest requestDto) {
 
@@ -53,7 +53,7 @@ public class UserLoginController {
 
     // ************* 비밀번호 찾기 *************
 
-    @ApiOperation(value = "비밀번호 찾기 - SMS 인증번호 전송")
+    @ApiOperation(value = "비밀번호 찾기 - SMS 인증번호 전송", notes = "비밀번호 찾기 시 비밀번호 찾기 SMS 인증 번호를 전송합니다.")
     @PostMapping(value = "/api/v1/users/find-pw/sms")
     public ResponseEntity<FindSmsAuthNumberPostResponse> sendFindPwSmsAuthNumber(
             @RequestBody @Validated PassResetSmsAuthNumberPostRequest requestDto) {
@@ -62,8 +62,8 @@ public class UserLoginController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @ApiOperation(value = "비밀번호 찾기 - SMS 인증번호 확인 및 비밀번호 초기화")
-    @GetMapping(value = "/api/v1/users/find-pw/sms/{smsAuthId}")
+    @ApiOperation(value = "비밀번호 찾기 - SMS 인증번호 확인 및 비밀번호 초기화", notes = "비밀번호 찾기 시 SMS 인증 번호를 확인한 후 비밀번호를 초기화합니다.")
+    @GetMapping(value = "/api/v1/users/find-pw/sms/{id}")
     public ResponseEntity<FindSmsAuthNumberGetResponse> verifySmsAuthAndResetPw(
             @ModelAttribute FindPwCheckSmsGetRequest requestDto) {
 
