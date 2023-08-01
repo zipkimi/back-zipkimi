@@ -64,7 +64,7 @@ public class UserLoginController {
 
     @ApiOperation(value = "비밀번호 찾기 - SMS 인증번호 확인 및 비밀번호 초기화", notes = "비밀번호 찾기 시 SMS 인증 번호를 확인한 후 비밀번호를 초기화합니다.")
     @GetMapping(value = "/api/v1/users/find-pw/sms/{id}")
-    public ResponseEntity<FindSmsAuthNumberGetResponse> verifySmsAuthAndResetPw(
+    public ResponseEntity<FindSmsAuthNumberGetResponse> checkFindPwSmsAuthAndReset(
             @ModelAttribute FindPwCheckSmsGetRequest requestDto) {
 
         // #1. SMS 인증번호 DB 데이터 검증 후
