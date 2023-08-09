@@ -161,12 +161,12 @@ public class UserLoginService {
     public FindSmsAuthNumberPostResponse sendFindPwSmsAuthNumber(
             PassResetSmsAuthNumberPostRequest requestDto) {
 
-        // 휴대폰 번호로 가입된 회원 확인
-        Optional<UserEntity> user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber());
+        // 휴대폰 번호와 이메일로 가입된 회원 확인
+        Optional<UserEntity> user = userRepository.findByPhoneNumberAndEmail(requestDto.getPhoneNumber(), requestDto.getEmail());
 
         if (user.isEmpty()) {
             return FindSmsAuthNumberPostResponse.builder()
-                    .result("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)")
+                    .result("입력하신 정보와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)")
                     .build();
         }
 
@@ -275,7 +275,7 @@ public class UserLoginService {
         } else {
             return FindSmsAuthNumberGetResponse
                     .builder()
-                    .result("입력하신 휴대폰 번호와 이메일 정보가 일치하는 사용자가 없습니다.")
+                    .result("입력하신 휴대폰 번호와 이메일 정보가 일치하는 사용자가 없습니다. \n(고객센터 문의 요망)")
                     .build();
         }
 
