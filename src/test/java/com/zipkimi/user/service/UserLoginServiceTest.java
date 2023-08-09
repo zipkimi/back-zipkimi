@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.zipkimi.entity.SmsAuthEntity;
@@ -25,9 +24,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,6 +51,9 @@ class UserLoginServiceTest {
     @InjectMocks
     private UserLoginService userLoginService;
 
+    private static final String PHONE_NUMBER = "01094342762";
+    private static final String EMAIL = "test@gmail.com";
+
     private static final String CHAR_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final SecureRandom secureRandom = new SecureRandom();
     private final Random random = new Random();
@@ -66,25 +66,50 @@ class UserLoginServiceTest {
 
     @AfterAll
     static void afterAll() {
+        System.out.println();
         System.out.println("## AfterAll 호출 ##");
-        System.out.println();
-    }
-
-    @BeforeEach
-    void beforeEach() {
-        System.out.println("## BeforeEach 호출 ##");
-        System.out.println();
-    }
-
-    @AfterEach
-    void afterEach() {
-        System.out.println("## AfterEach 호출 ##");
-        System.out.println();
     }
 
     // ************* 아이디 찾기 *************
 
     // ************* 아이디 찾기 - SMS 인증번호 전송 *************
+
+    // User 생성
+    private UserEntity createUser() {
+        UserEntity user = new UserEntity();
+        user.setPhoneNumber(PHONE_NUMBER);
+        user.setEmail(EMAIL);
+        return user;
+    }
+
+    // SMS 인증 객체 생성
+    private SmsAuthEntity createSmsAuthEntity() {
+        SmsAuthEntity smsAuth = new SmsAuthEntity();
+        smsAuth.setSmsAuthId(1L);
+        smsAuth.setSmsAuthNumber("1234");
+        smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(5));
+        smsAuth.setIsUse(false);
+        return smsAuth;
+    }
+
+    // ID 찾기 확인 요청 객체 생성
+    private FindIdCheckSmsGetRequest createFindIdCheckSmsGetRequest(Long smsAuthId, String smsAuthNumber, String phoneNumber) {
+        FindIdCheckSmsGetRequest requestDto = new FindIdCheckSmsGetRequest();
+        requestDto.setSmsAuthId(smsAuthId);
+        requestDto.setSmsAuthNumber(smsAuthNumber);
+        requestDto.setPhoneNumber(phoneNumber);
+        return requestDto;
+    }
+
+    // Pw 찾기 확인 요청 객체 생성
+    private FindPwCheckSmsGetRequest createFindPwCheckSmsGetRequest(Long smsAuthId, String smsAuthNumber, String phoneNumber, String email) {
+        FindPwCheckSmsGetRequest requestDto = new FindPwCheckSmsGetRequest();
+        requestDto.setSmsAuthId(smsAuthId);
+        requestDto.setSmsAuthNumber(smsAuthNumber);
+        requestDto.setPhoneNumber(phoneNumber);
+        requestDto.setEmail(email);
+        return requestDto;
+    }
 
     @Test
     @DisplayName(value = "아이디 찾기 - SMS 인증번호 전송 성공 테스트")
@@ -93,10 +118,7 @@ class UserLoginServiceTest {
         System.out.println("## test1 시작 ##");
 
         // given
-        UserEntity user = new UserEntity();
-        user.setPhoneNumber("01094342762");
-        user.setEmail("test@gmail.com");
-
+        UserEntity user = createUser();
         when(userRepository.findByPhoneNumber(any())).thenReturn(Optional.of(user));
         when(smsAuthRepository.findValidSmsAuthByPhoneNumberAndType(any(), any(), any())).thenReturn(null);
 
@@ -175,24 +197,9 @@ class UserLoginServiceTest {
         System.out.println("## test5 시작 ##");
 
         // given
-        // SMS 인증
-        SmsAuthEntity smsAuth = new SmsAuthEntity();
-        smsAuth.setSmsAuthId(1L);
-        smsAuth.setSmsAuthNumber("1234");
-        smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(5));
-        smsAuth.setIsUse(false);
-        smsAuthRepository.save(smsAuth);
-
-        // 회원
-        UserEntity user = new UserEntity();
-        user.setPhoneNumber("01094342762");
-        user.setEmail("test@gmail.com");
-        userRepository.save(user);
-
-        FindIdCheckSmsGetRequest requestDto = new FindIdCheckSmsGetRequest();
-        requestDto.setSmsAuthId(1L);
-        requestDto.setSmsAuthNumber("1234");
-        requestDto.setPhoneNumber("01094342762");
+        SmsAuthEntity smsAuth = createSmsAuthEntity();
+        UserEntity user = createUser();
+        FindIdCheckSmsGetRequest requestDto = createFindIdCheckSmsGetRequest(smsAuth.getSmsAuthId(), "1234", "01094342762");
 
         when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
         when(userRepository.findByPhoneNumber("01094342762")).thenReturn(Optional.of(user));
@@ -212,17 +219,8 @@ class UserLoginServiceTest {
         System.out.println("## test6 시작 ##");
 
         // given
-        SmsAuthEntity smsAuth = new SmsAuthEntity();
-        smsAuth.setSmsAuthId(1L);
-        smsAuth.setSmsAuthNumber("1234");
-        smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(5));
-        smsAuth.setIsUse(false);
-        smsAuthRepository.save(smsAuth);
-
-        FindIdCheckSmsGetRequest requestDto = new FindIdCheckSmsGetRequest();
-        requestDto.setSmsAuthId(1L);
-        requestDto.setSmsAuthNumber("5678");
-        requestDto.setPhoneNumber("01094342762");
+        SmsAuthEntity smsAuth = createSmsAuthEntity();
+        FindIdCheckSmsGetRequest requestDto = createFindIdCheckSmsGetRequest(smsAuth.getSmsAuthId(), "5678", "01094342762");
 
         when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
 
@@ -240,17 +238,10 @@ class UserLoginServiceTest {
         System.out.println("## test7 시작 ##");
 
         //given
-        SmsAuthEntity smsAuth = new SmsAuthEntity();
-        smsAuth.setSmsAuthId(1L);
-        smsAuth.setSmsAuthNumber("1234");
+        SmsAuthEntity smsAuth = createSmsAuthEntity();
         smsAuth.setExpirationTime(LocalDateTime.now().minusMinutes(1)); // 만료 시간을 현재 날짜와 시간 - 1분으로 세팅 (이미 만료된 인증번호)
-        smsAuth.setIsUse(false);
-        smsAuthRepository.save(smsAuth);
 
-        FindIdCheckSmsGetRequest requestDto = new FindIdCheckSmsGetRequest();
-        requestDto.setSmsAuthId(1L);
-        requestDto.setSmsAuthNumber("1234");
-        requestDto.setPhoneNumber("01094342762");
+        FindIdCheckSmsGetRequest requestDto = createFindIdCheckSmsGetRequest(smsAuth.getSmsAuthId(), "1234", "01094342762");
 
         when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
 
@@ -268,17 +259,10 @@ class UserLoginServiceTest {
         System.out.println("## test8 시작 ##");
 
         //given
-        SmsAuthEntity smsAuth = new SmsAuthEntity();
-        smsAuth.setSmsAuthId(1L);
-        smsAuth.setSmsAuthNumber("1234");
-        smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(5));
-        smsAuth.setIsUse(true); // 이미 사용된 인증번호 = true 로 세팅
-        smsAuthRepository.save(smsAuth);
+        SmsAuthEntity smsAuth = createSmsAuthEntity();
+        smsAuth.setIsUse(true);
 
-        FindIdCheckSmsGetRequest requestDto = new FindIdCheckSmsGetRequest();
-        requestDto.setSmsAuthId(1L);
-        requestDto.setSmsAuthNumber("1234");
-        requestDto.setPhoneNumber("01094342762");
+        FindIdCheckSmsGetRequest requestDto = createFindIdCheckSmsGetRequest(smsAuth.getSmsAuthId(), "1234", "01094342762");
 
         when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
 
@@ -296,17 +280,8 @@ class UserLoginServiceTest {
         System.out.println("## test9 시작 ##");
 
         //given
-        SmsAuthEntity smsAuth = new SmsAuthEntity();
-        smsAuth.setSmsAuthId(1L);
-        smsAuth.setSmsAuthNumber("1234");
-        smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(5));
-        smsAuth.setIsUse(false);
-        smsAuthRepository.save(smsAuth);
-
-        FindIdCheckSmsGetRequest requestDto = new FindIdCheckSmsGetRequest();
-        requestDto.setSmsAuthId(1L);
-        requestDto.setSmsAuthNumber("1234");
-        requestDto.setPhoneNumber("01094342762");
+        SmsAuthEntity smsAuth = createSmsAuthEntity();
+        FindIdCheckSmsGetRequest requestDto = createFindIdCheckSmsGetRequest(smsAuth.getSmsAuthId(), "1234", "01094342762");
 
         when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
         when(userRepository.findByPhoneNumber("01094342762")).thenReturn(Optional.empty());
@@ -329,10 +304,7 @@ class UserLoginServiceTest {
         System.out.println("## test10 시작 ##");
 
         // given
-        UserEntity user = new UserEntity();
-        user.setPhoneNumber("01094342762");
-        user.setEmail("test@gmail.com");
-        userRepository.save(user);
+        UserEntity user = createUser();
 
         when(userRepository.findByPhoneNumberAndEmail(any(), any())).thenReturn(Optional.of(user));
         when(smsAuthRepository.findValidSmsAuthByPhoneNumberAndType(any(), any(), any())).thenReturn(null);
@@ -414,28 +386,14 @@ class UserLoginServiceTest {
 
         // given
         // SMS 인증 객체 생성
-        SmsAuthEntity smsAuth = new SmsAuthEntity();
-        smsAuth.setSmsAuthId(1L);
-        smsAuth.setSmsAuthNumber("1234");
-        smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(5));
-        smsAuth.setIsUse(false);
-        smsAuthRepository.save(smsAuth);
-
+        SmsAuthEntity smsAuth = createSmsAuthEntity();
         when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
 
         // USER 회원 객체 생성
-        UserEntity user = new UserEntity();
-        user.setPhoneNumber("01094342762");
-        user.setEmail("test@gmail.com");
-        userRepository.save(user);
-
+        UserEntity user = createUser();
         when(userRepository.findByPhoneNumberAndEmail("01094342762","test@gmail.com")).thenReturn(Optional.of(user));
 
-        FindPwCheckSmsGetRequest requestDto = new FindPwCheckSmsGetRequest();
-        requestDto.setSmsAuthId(1L);
-        requestDto.setSmsAuthNumber("1234");
-        requestDto.setPhoneNumber("01094342762");
-        requestDto.setEmail("test@gmail.com");
+        FindPwCheckSmsGetRequest requestDto = createFindPwCheckSmsGetRequest(smsAuth.getSmsAuthId(), "1234", "01094342762", "test@gmail.com");
 
         // when
         FindSmsAuthNumberGetResponse response = userLoginService.checkFindPwSmsAuth(requestDto);
@@ -452,18 +410,8 @@ class UserLoginServiceTest {
         System.out.println("## test15 시작 ##");
 
         // given
-        SmsAuthEntity smsAuth = new SmsAuthEntity();
-        smsAuth.setSmsAuthId(1L);
-        smsAuth.setSmsAuthNumber("1234");
-        smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(5));
-        smsAuth.setIsUse(false);
-        smsAuthRepository.save(smsAuth);
-
-        FindPwCheckSmsGetRequest requestDto = new FindPwCheckSmsGetRequest();
-        requestDto.setSmsAuthId(1L);
-        requestDto.setSmsAuthNumber("5678");
-        requestDto.setPhoneNumber("01094342762");
-        requestDto.setEmail("test@gmail.com");
+        SmsAuthEntity smsAuth = createSmsAuthEntity();
+        FindPwCheckSmsGetRequest requestDto = createFindPwCheckSmsGetRequest(smsAuth.getSmsAuthId(), "5678", "01094342762", "test@gmail.com");
 
         when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
 
@@ -481,18 +429,10 @@ class UserLoginServiceTest {
         System.out.println("## test16 시작 ##");
 
         //given
-        SmsAuthEntity smsAuth = new SmsAuthEntity();
-        smsAuth.setSmsAuthId(1L);
-        smsAuth.setSmsAuthNumber("1234");
+        SmsAuthEntity smsAuth = createSmsAuthEntity();
         smsAuth.setExpirationTime(LocalDateTime.now().minusMinutes(1)); // 만료 시간을 현재 날짜와 시간 - 1분으로 세팅 (이미 만료된 인증번호)
-        smsAuth.setIsUse(false);
-        smsAuthRepository.save(smsAuth);
 
-        FindPwCheckSmsGetRequest requestDto = new FindPwCheckSmsGetRequest();
-        requestDto.setSmsAuthId(1L);
-        requestDto.setSmsAuthNumber("1234");
-        requestDto.setPhoneNumber("01094342762");
-        requestDto.setEmail("test@gmail.com");
+        FindPwCheckSmsGetRequest requestDto = createFindPwCheckSmsGetRequest(smsAuth.getSmsAuthId(), "1234", "01094342762", "test@gmail.com");
 
         when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
 
@@ -510,18 +450,10 @@ class UserLoginServiceTest {
         System.out.println("## test17 시작 ##");
 
         //given
-        SmsAuthEntity smsAuth = new SmsAuthEntity();
-        smsAuth.setSmsAuthId(1L);
-        smsAuth.setSmsAuthNumber("1234");
-        smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(5));
+        SmsAuthEntity smsAuth = createSmsAuthEntity();
         smsAuth.setIsUse(true); // 이미 사용된 인증번호 = true 로 세팅
-        smsAuthRepository.save(smsAuth);
 
-        FindPwCheckSmsGetRequest requestDto = new FindPwCheckSmsGetRequest();
-        requestDto.setSmsAuthId(1L);
-        requestDto.setSmsAuthNumber("1234");
-        requestDto.setPhoneNumber("01094342762");
-        requestDto.setEmail("test@gmail.com");
+        FindPwCheckSmsGetRequest requestDto = createFindPwCheckSmsGetRequest(smsAuth.getSmsAuthId(), "1234", "01094342762", "test@gmail.com");
 
         when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
 
@@ -539,18 +471,9 @@ class UserLoginServiceTest {
         System.out.println("## test18 시작 ##");
 
         //given
-        SmsAuthEntity smsAuth = new SmsAuthEntity();
-        smsAuth.setSmsAuthId(1L);
-        smsAuth.setSmsAuthNumber("1234");
-        smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(5));
-        smsAuth.setIsUse(false);
-        smsAuthRepository.save(smsAuth);
+        SmsAuthEntity smsAuth = createSmsAuthEntity();
 
-        FindPwCheckSmsGetRequest requestDto = new FindPwCheckSmsGetRequest();
-        requestDto.setSmsAuthId(1L);
-        requestDto.setSmsAuthNumber("1234");
-        requestDto.setPhoneNumber("01094342762");
-        requestDto.setEmail("test@gmail.com");
+        FindPwCheckSmsGetRequest requestDto = createFindPwCheckSmsGetRequest(smsAuth.getSmsAuthId(), "1234", "01094342762", "test@gmail.com");
 
         when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
         when(userRepository.findByPhoneNumberAndEmail("01094342762", "test@gmail.com")).thenReturn(Optional.empty());
@@ -566,7 +489,6 @@ class UserLoginServiceTest {
     void testTempPasswordGeneration() {
         System.out.println("## testTempPasswordGeneration 시작 ##");
         String generatedPassword = userLoginService.tempPassword(10);
-        System.out.println("Generated Password: " + generatedPassword);
         assertEquals(10, generatedPassword.length());
     }
 
