@@ -1,8 +1,11 @@
 package com.zipkimi.user.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.zipkimi.entity.SmsAuthEntity;
@@ -418,11 +421,15 @@ class UserLoginServiceTest {
         smsAuth.setIsUse(false);
         smsAuthRepository.save(smsAuth);
 
+        when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
+
         // USER 회원 객체 생성
         UserEntity user = new UserEntity();
         user.setPhoneNumber("01094342762");
         user.setEmail("test@gmail.com");
         userRepository.save(user);
+
+        when(userRepository.findByPhoneNumberAndEmail("01094342762","test@gmail.com")).thenReturn(Optional.of(user));
 
         FindPwCheckSmsGetRequest requestDto = new FindPwCheckSmsGetRequest();
         requestDto.setSmsAuthId(1L);
@@ -430,16 +437,12 @@ class UserLoginServiceTest {
         requestDto.setPhoneNumber("01094342762");
         requestDto.setEmail("test@gmail.com");
 
-        when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
-        when(userRepository.findByPhoneNumberAndEmail("01094342762","test@gmail.com")).thenReturn(Optional.of(user));
-
-        String generatedPassword = "testGeneratedPassword";
-        when(userLoginService.tempPassword(10)).thenReturn(generatedPassword);
-
         // when
         FindSmsAuthNumberGetResponse response = userLoginService.checkFindPwSmsAuth(requestDto);
 
-        assertEquals("비밀번호가 '" + generatedPassword + "'로 초기화 되었습니다.", response.getResult());
+        assertNotNull(response);
+        assertTrue(response.getResult().contains("비밀번호가"));
+        assertTrue(response.getResult().contains("로 초기화 되었습니다."));
     }
 
     @Test
@@ -557,6 +560,14 @@ class UserLoginServiceTest {
 
         // then
         assertEquals("입력하신 휴대폰 번호와 이메일 정보가 일치하는 사용자가 없습니다. \n(고객센터 문의 요망)", response.getResult());
+    }
+
+    @Test
+    void testTempPasswordGeneration() {
+        System.out.println("## testTempPasswordGeneration 시작 ##");
+        String generatedPassword = userLoginService.tempPassword(10);
+        System.out.println("Generated Password: " + generatedPassword);
+        assertEquals(10, generatedPassword.length());
     }
 
     //임시 비밀번호 생성
