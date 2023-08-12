@@ -11,6 +11,7 @@ import com.zipkimi.entity.SmsAuthEntity;
 import com.zipkimi.entity.UserEntity;
 import com.zipkimi.repository.SmsAuthRepository;
 import com.zipkimi.repository.UserRepository;
+import com.zipkimi.user.dto.request.JoinUserPostRequest;
 import com.zipkimi.user.dto.request.SmsAuthNumberPostRequest;
 import java.time.LocalDateTime;
 import javax.transaction.Transactional;
@@ -107,5 +108,37 @@ class UserManagementControllerTest {
                 // then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("본인 인증에 성공했습니다."));
+    }
+
+    @Test
+    @DisplayName(value = "회원가입 성공 테스트")
+    void joinUserSuccessTest() throws Exception {
+        //given
+        SmsAuthEntity smsAuth = new SmsAuthEntity();
+        smsAuth.setSmsAuthNumber("0000");
+        smsAuth.setPhoneNumber("01000000000");
+        smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(3L));
+        smsAuth.setSmsAuthType("JOIN");
+        smsAuth.setIsUse(true);
+        smsAuth.setIsAuthenticate(true);
+        smsAuthRepository.save(smsAuth);
+
+        JoinUserPostRequest requestDto = JoinUserPostRequest.builder()
+                .email("test@gmail.com")
+                .name("test name")
+                .pw("test123@")
+                .smsAuthId(smsAuth.getSmsAuthId())
+                .build();
+
+        String json = objectMapper.writeValueAsString(requestDto);
+        // when
+        mockMvc.perform(post("/api/v1/userMgmt/users")
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andDo(print())
+                // then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("회원가입 완료"));
+
     }
 }
