@@ -1,7 +1,9 @@
 package com.zipkimi.user.controller;
 
+import com.zipkimi.user.dto.request.JoinUserPostRequest;
 import com.zipkimi.user.dto.request.SmsAuthNumberGetRequest;
 import com.zipkimi.user.dto.request.SmsAuthNumberPostRequest;
+import com.zipkimi.user.dto.response.JoinUserPostResponse;
 import com.zipkimi.user.dto.response.SmsAuthNumberGetResponse;
 import com.zipkimi.user.dto.response.SmsAuthNumberPostResponse;
 import com.zipkimi.user.service.UserManagementService;
@@ -28,6 +30,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserManagementController {
 
     private final UserManagementService userManagementService;
+
+    @ApiOperation(value = "일반 회원 가입")
+    @PostMapping(value = "/api/v1/userMgmt/users")
+    public ResponseEntity<JoinUserPostResponse> joinUser(HttpServletRequest request, @RequestBody @Validated JoinUserPostRequest requestDto){
+        return ResponseEntity.status(HttpStatus.OK).body(userManagementService.joinUser(requestDto));
+    }
 
     @ApiOperation(value = "SMS 인증번호 전송")
     @PostMapping(value = "/api/v1/userMgmt/users/sms")
