@@ -14,6 +14,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SmsAuthNumberGetResponse {
 
-    @ApiModelProperty(name = "결과", example = "본인 인증에 성공했습니다., 인증번호를 확인해주세요.", required = true)
+    @ApiModelProperty(name = "응답 메시지", example = "본인 인증에 성공했습니다., 인증번호를 확인해주세요.")
     private String message;
 }
