@@ -18,16 +18,13 @@ public class LogInterceptor implements HandlerInterceptor {
         log.info("CONTENTTYPE : " + request.getContentType());
         log.info("METHOD      : " + request.getMethod());
         log.info("PARAMETER   : " + request.getParameterMap().toString());
-        //TODO logging 추가
-
         return true;
     }
 
     @Override
     public void postHandle(HttpServletRequest request
             , HttpServletResponse response
-            , Object handler, ModelAndView modelAndView)
-            throws Exception {
+            , Object handler, ModelAndView modelAndView) throws Exception {
         // 요청 후처리 로직 구현
         log.info("******************");
         log.info("STATUS : " + response.getStatus());
