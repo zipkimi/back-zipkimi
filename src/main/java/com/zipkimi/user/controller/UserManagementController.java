@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @AllArgsConstructor
-@Api(value = "회원관리")
+@Api(tags = "회원 관리")
 @RequestMapping (produces = "application/json; charset=utf8")
 public class UserManagementController {
 
