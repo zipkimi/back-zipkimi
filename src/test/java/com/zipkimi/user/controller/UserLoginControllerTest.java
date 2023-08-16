@@ -72,7 +72,10 @@ class UserLoginControllerTest {
 
         //when
         ResponseEntity<FindSmsAuthNumberPostResponse> response = userLoginController.sendFindIdSmsAuthNumber(requestDto);
-        System.out.println("sendFindIdSmsAuthNumberFailureTest response.getBody().getResult() = " + response.getBody().getMessage());
+
+        log.info("******************");
+        log.info("sendFindIdSmsAuthNumberSuccessTest response.getBody().getResult() ={}", response.getBody().getMessage());
+        log.info("******************");
 
         //then
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -101,8 +104,9 @@ class UserLoginControllerTest {
 
         //when
         ResponseEntity<FindSmsAuthNumberPostResponse> response = userLoginController.sendFindIdSmsAuthNumber(requestDto);
-        System.out.println("sendFindIdSmsAuthNumberFailureTest response.getBody().getResult() = " + response.getBody().getMessage());
 
+        log.info("******************");
+        log.info("sendFindIdSmsAuthNumberFailureTest response.getBody().getResult() ={}", response.getBody().getMessage());
         log.info("******************");
 
         //then
@@ -139,7 +143,10 @@ class UserLoginControllerTest {
 
         // when
         ResponseEntity<FindSmsAuthNumberGetResponse> response = userLoginController.checkFindIdSmsAuth(requestDto);
-        System.out.println("checkFindIdSmsAuthSuccessTest response.getBody().getResult() = " + response.getBody().getMessage());
+
+        log.info("******************");
+        log.info("checkFindIdSmsAuthSuccessTest response.getBody().getResult() ={}", response.getBody().getMessage());
+        log.info("******************");
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -167,7 +174,10 @@ class UserLoginControllerTest {
 
         // when
         ResponseEntity<FindSmsAuthNumberGetResponse> response = userLoginController.checkFindIdSmsAuth(requestDto);
-        System.out.println("checkFindIdSmsAuthFailureTest response.getBody().getResult() = " + response.getBody().getMessage());
+
+        log.info("******************");
+        log.info("checkFindIdSmsAuthFailureTest response.getBody().getResult() ={}", response.getBody().getMessage());
+        log.info("******************");
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -187,8 +197,11 @@ class UserLoginControllerTest {
         userRepository.save(user);
 
         PassResetSmsAuthNumberPostRequest requestDto = new PassResetSmsAuthNumberPostRequest(user.getPhoneNumber(), user.getEmail());
-        System.out.println("requestDto.getPhoneNumber() = " + requestDto.getPhoneNumber());
-        System.out.println("requestDto.getEmail() = " + requestDto.getEmail());
+
+        log.info("******************");
+        log.info("requestDto.getPhoneNumber() ={}", requestDto.getPhoneNumber());
+        log.info("requestDto.getEmail() ={}", requestDto.getEmail());
+        log.info("******************");
 
         when(userLoginService.sendFindPwSmsAuthNumber(requestDto)).thenReturn(
                 FindSmsAuthNumberPostResponse
@@ -199,7 +212,10 @@ class UserLoginControllerTest {
 
         //when
         ResponseEntity<FindSmsAuthNumberPostResponse> response = userLoginController.sendFindPwSmsAuthNumber(requestDto);
-        System.out.println("sendFindPwSmsAuthNumberSuccessTest response.getBody().getResult() = " + response.getBody().getMessage());
+
+        log.info("******************");
+        log.info("sendFindPwSmsAuthNumberSuccessTest response.getBody().getResult() ={}", response.getBody().getMessage());
+        log.info("******************");
 
         //then
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -219,8 +235,11 @@ class UserLoginControllerTest {
         userRepository.save(user);
 
         PassResetSmsAuthNumberPostRequest requestDto = new PassResetSmsAuthNumberPostRequest("01012341234", "dkdkdk@gmail.com");
-        System.out.println("requestDto.getPhoneNumber() = " + requestDto.getPhoneNumber());
-        System.out.println("requestDto.getEmail() = " + requestDto.getEmail());
+
+        log.info("******************");
+        log.info("requestDto.getPhoneNumber() ={}", requestDto.getPhoneNumber());
+        log.info("requestDto.getEmail() ={}", requestDto.getEmail());
+        log.info("******************");
 
         when(userLoginService.sendFindPwSmsAuthNumber(requestDto)).thenReturn(
                 FindSmsAuthNumberPostResponse
@@ -231,7 +250,10 @@ class UserLoginControllerTest {
 
         //when
         ResponseEntity<FindSmsAuthNumberPostResponse> response = userLoginController.sendFindPwSmsAuthNumber(requestDto);
-        System.out.println("sendFindPwSmsAuthNumberSuccessTest response.getBody().getResult() = " + response.getBody().getMessage());
+
+        log.info("******************");
+        log.info("sendFindPwSmsAuthNumberFailureTest response.getBody().getResult() ={}", response.getBody().getMessage());
+        log.info("******************");
 
         //then
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -257,7 +279,10 @@ class UserLoginControllerTest {
         FindPwCheckSmsGetRequest requestDto = new FindPwCheckSmsGetRequest(1L, user.getPhoneNumber(), "1234", user.getEmail());
 
         String newPassword = tempPassword(10);
-        System.out.println("newPassword = " + newPassword);
+
+        log.info("******************");
+        log.info("newPassword = {}", newPassword);
+        log.info("******************");
 
         when(userLoginService.checkFindPwSmsAuth(requestDto)).thenReturn(
                 FindSmsAuthNumberGetResponse
@@ -271,7 +296,10 @@ class UserLoginControllerTest {
 
         // when
         ResponseEntity<FindSmsAuthNumberGetResponse> response = userLoginController.checkFindPwSmsAuthAndReset(requestDto);
-        System.out.println("checkFindPwSmsAuthAndResetSuccessTest response.getBody().getResult() = " + response.getBody().getMessage());
+
+        log.info("******************");
+        log.info("checkFindPwSmsAuthAndResetSuccessTest response.getBody().getResult() ={}", response.getBody().getMessage());
+        log.info("******************");
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -307,7 +335,10 @@ class UserLoginControllerTest {
 
         // when
         ResponseEntity<FindSmsAuthNumberGetResponse> response = userLoginController.checkFindPwSmsAuthAndReset(requestDto);
-        System.out.println("checkFindPwSmsAuthAndResetFailureTest response.getBody().getResult() = " + response.getBody().getMessage());
+
+        log.info("******************");
+        log.info("checkFindPwSmsAuthAndResetFailureTest response.getBody().getResult() ={}", response.getBody().getMessage());
+        log.info("******************");
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
