@@ -23,6 +23,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -34,6 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @ExtendWith(MockitoExtension.class)
 @Transactional
 @AutoConfigureMockMvc
@@ -58,16 +60,15 @@ class UserLoginServiceTest {
     private static final SecureRandom secureRandom = new SecureRandom();
     private final Random random = new Random();
 
+
     @BeforeAll
     static void beforeAll() {
-        System.out.println("## BeforeAll 호출 ##");
-        System.out.println();
+        log.info("## BeforeAll 호출 ##");
     }
 
     @AfterAll
     static void afterAll() {
-        System.out.println();
-        System.out.println("## AfterAll 호출 ##");
+        log.info("## AfterAll 호출 ##");
     }
 
     // ************* 아이디 찾기 *************
@@ -115,7 +116,7 @@ class UserLoginServiceTest {
     @DisplayName(value = "아이디 찾기 - SMS 인증번호 전송 성공 테스트")
     void sendFindIdSmsAuthNumberSuccessTest() throws Exception {
 
-        System.out.println("## test1 시작 ##");
+        log.info("## test1 시작 ##");
 
         // given
         UserEntity user = createUser();
@@ -135,7 +136,7 @@ class UserLoginServiceTest {
     @DisplayName("아이디 찾기 - SMS 인증번호 전송 실패 테스트 (#1. 휴대폰 번호로 가입된 회원 없음)")
     void sendFindIdSmsAuthNumberFailureTestUserNotFound() throws Exception {
 
-        System.out.println("## test2 시작 ##");
+        log.info("## test2 시작 ##");
 
         // given
         SmsAuthNumberPostRequest requestDto = new SmsAuthNumberPostRequest("01094342762");
@@ -152,7 +153,7 @@ class UserLoginServiceTest {
     @DisplayName("아이디 찾기 - SMS 인증번호 전송 실패 테스트 (#2. 유효한 SMS 인증번호 이미 존재)")
     void sendFindIdSmsAuthNumberFailureTestExistingSmsAuth() throws Exception {
 
-        System.out.println("## test3 시작 ##");
+        log.info("## test3 시작 ##");
 
         // given
         SmsAuthNumberPostRequest requestDto = new SmsAuthNumberPostRequest("01094342762");
@@ -171,7 +172,8 @@ class UserLoginServiceTest {
     @DisplayName("아이디 찾기 - SMS 인증번호 전송 실패 테스트 (#3. SMS 인증번호 생성 중 오류 발생)")
     void sendFindIdSmsAuthNumberFailureTestSmsAuthCreationError() throws Exception {
 
-        System.out.println("## test4 시작 ##");
+        log.info("## test4 시작 ##");
+
         // given
         SmsAuthNumberPostRequest requestDto = new SmsAuthNumberPostRequest("01094342762");
 
@@ -194,7 +196,7 @@ class UserLoginServiceTest {
     @DisplayName(value = "아이디 찾기 - SMS 인증번호 검증 & 휴대폰 번호로 가입된 회원 이메일 조회 성공 테스트")
     void checkFindIdSmsAuthSuccessTest() throws Exception {
 
-        System.out.println("## test5 시작 ##");
+        log.info("## test5 시작 ##");
 
         // given
         SmsAuthEntity smsAuth = createSmsAuthEntity();
@@ -216,7 +218,7 @@ class UserLoginServiceTest {
     @DisplayName(value = "아이디 찾기 - SMS 인증번호 검증 - 실패 테스트 (#1. 인증번호 불일치)")
     void checkFindIdSmsAuthFailureTestInvalidAuthNumber() throws Exception {
 
-        System.out.println("## test6 시작 ##");
+        log.info("## test6 시작 ##");
 
         // given
         SmsAuthEntity smsAuth = createSmsAuthEntity();
@@ -235,7 +237,7 @@ class UserLoginServiceTest {
     @DisplayName(value = "아이디 찾기 - SMS 인증번호 검증 - 실패 테스트 (#2. 인증번호 만료)")
     void checkFindIdSmsAuthFailureTestExpiredAuthNumber() throws Exception {
 
-        System.out.println("## test7 시작 ##");
+        log.info("## test7 시작 ##");
 
         //given
         SmsAuthEntity smsAuth = createSmsAuthEntity();
@@ -256,7 +258,7 @@ class UserLoginServiceTest {
     @DisplayName(value = "아이디 찾기 - SMS 인증번호 검증 - 실패 테스트 (#3. 이미 사용된 인증번호)")
     void checkFindIdSmsAuthFailureTestUsedAuthNumber() throws Exception {
 
-        System.out.println("## test8 시작 ##");
+        log.info("## test8 시작 ##");
 
         //given
         SmsAuthEntity smsAuth = createSmsAuthEntity();
@@ -277,7 +279,7 @@ class UserLoginServiceTest {
     @DisplayName(value = "아이디 찾기 - 휴대폰 번호로 가입된 회원 없음 테스트")
     void checkFindIdSmsAuthFailureTestNoUser() throws Exception {
 
-        System.out.println("## test9 시작 ##");
+        log.info("## test9 시작 ##");
 
         //given
         SmsAuthEntity smsAuth = createSmsAuthEntity();
@@ -301,7 +303,7 @@ class UserLoginServiceTest {
     @DisplayName(value = "비밀번호 찾기 - SMS 인증번호 전송 성공 테스트")
     void sendFindPwSmsAuthNumberSuccessTest() throws Exception {
 
-        System.out.println("## test10 시작 ##");
+        log.info("## test10 시작 ##");
 
         // given
         UserEntity user = createUser();
@@ -322,7 +324,7 @@ class UserLoginServiceTest {
     @DisplayName("비밀번호 찾기 - SMS 인증번호 전송 실패 테스트 (#1. 휴대폰 번호와 이메일로 가입된 회원 없음)")
     void sendFindPwSmsAuthNumberFailureTestUserNotFound() throws Exception {
 
-        System.out.println("## test11 시작 ##");
+        log.info("## test11 시작 ##");
 
         // given
         PassResetSmsAuthNumberPostRequest requestDto = new PassResetSmsAuthNumberPostRequest("01094342762", "test@gmail.com");
@@ -339,7 +341,7 @@ class UserLoginServiceTest {
     @DisplayName("비밀번호 찾기 - SMS 인증번호 전송 실패 테스트 (#2. 유효한 SMS 인증번호 이미 존재)")
     void sendFindPwSmsAuthNumberFailureTestExistingSmsAuth() throws Exception {
 
-        System.out.println("## test12 시작 ##");
+        log.info("## test12 시작 ##");
 
         // given
         PassResetSmsAuthNumberPostRequest requestDto = new PassResetSmsAuthNumberPostRequest("01094342762", "test@gmail.com");
@@ -358,7 +360,7 @@ class UserLoginServiceTest {
     @DisplayName("비밀번호 찾기 - SMS 인증번호 전송 실패 테스트 (#3. SMS 인증번호 생성 중 오류 발생)")
     void sendFindPwSmsAuthNumberFailureTestSmsAuthCreationError() throws Exception {
 
-        System.out.println("## test13 시작 ##");
+        log.info("## test13 시작 ##");
 
         // given
         PassResetSmsAuthNumberPostRequest requestDto = new PassResetSmsAuthNumberPostRequest("01094342762", "test@gmail.com");
@@ -382,7 +384,7 @@ class UserLoginServiceTest {
     @DisplayName(value = "비밀번호 찾기 - SMS 인증번호 검증 & 이메일과 휴대폰 번호로 가입 회원 조회 성공 테스트")
     void checkFindPwSmsAuthSuccessTest() throws Exception {
 
-        System.out.println("## test14 시작 ##");
+        log.info("## test14 시작 ##");
 
         // given
         // SMS 인증 객체 생성
@@ -407,7 +409,7 @@ class UserLoginServiceTest {
     @DisplayName(value = "비밀번호 찾기 - SMS 인증번호 검증 - 실패 테스트 (#1. 인증번호 불일치)")
     void checkFindPwSmsAuthFailureTestInvalidAuthNumber() throws Exception {
 
-        System.out.println("## test15 시작 ##");
+        log.info("## test15 시작 ##");
 
         // given
         SmsAuthEntity smsAuth = createSmsAuthEntity();
@@ -426,7 +428,7 @@ class UserLoginServiceTest {
     @DisplayName(value = "비밀번호 찾기 - SMS 인증번호 검증 - 실패 테스트 (#2. 인증번호 만료)")
     void checkFindPwSmsAuthFailureTestExpiredAuthNumber() throws Exception {
 
-        System.out.println("## test16 시작 ##");
+        log.info("## test16 시작 ##");
 
         //given
         SmsAuthEntity smsAuth = createSmsAuthEntity();
@@ -447,7 +449,7 @@ class UserLoginServiceTest {
     @DisplayName(value = "비밀번호 찾기 - SMS 인증번호 검증 - 실패 테스트 (#3. 이미 사용된 인증번호)")
     void checkFindPwSmsAuthFailureTestUsedAuthNumber() throws Exception {
 
-        System.out.println("## test17 시작 ##");
+        log.info("## test17 시작 ##");
 
         //given
         SmsAuthEntity smsAuth = createSmsAuthEntity();
@@ -468,7 +470,7 @@ class UserLoginServiceTest {
     @DisplayName(value = "비밀번호 찾기 - 휴대폰 번호와 이메일로 가입된 회원 없음 테스트")
     void checkFindPwSmsAuthFailureTestNoUser() throws Exception {
 
-        System.out.println("## test18 시작 ##");
+        log.info("## test18 시작 ##");
 
         //given
         SmsAuthEntity smsAuth = createSmsAuthEntity();
@@ -486,8 +488,11 @@ class UserLoginServiceTest {
     }
 
     @Test
+    @DisplayName(value = "비밀번호 찾기 - 임시 비밀번호 생성 테스트")
     void testTempPasswordGeneration() {
-        System.out.println("## testTempPasswordGeneration 시작 ##");
+
+        log.info("## testTempPasswordGeneration 시작 ##");
+
         String generatedPassword = userLoginService.tempPassword(10);
         assertEquals(10, generatedPassword.length());
     }
