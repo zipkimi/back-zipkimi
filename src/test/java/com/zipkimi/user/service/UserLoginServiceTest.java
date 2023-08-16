@@ -128,7 +128,7 @@ class UserLoginServiceTest {
         FindSmsAuthNumberPostResponse response = userLoginService.sendFindIdSmsAuthNumber(requestDto);
 
         // then
-        assertEquals("인증번호를 전송하였습니다.", response.getResult());
+        assertEquals("인증번호를 전송하였습니다.", response.getMessage());
     }
 
     @Test
@@ -145,7 +145,7 @@ class UserLoginServiceTest {
         FindSmsAuthNumberPostResponse response = userLoginService.sendFindIdSmsAuthNumber(requestDto);
 
         // then
-        assertEquals("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)", response.getResult());
+        assertEquals("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)", response.getMessage());
     }
 
     @Test
@@ -164,7 +164,7 @@ class UserLoginServiceTest {
         FindSmsAuthNumberPostResponse response = userLoginService.sendFindIdSmsAuthNumber(requestDto);
 
         // then
-        assertEquals("유효한 SMS 인증번호가 있습니다. 인증번호를 입력해주세요.", response.getResult());
+        assertEquals("유효한 SMS 인증번호가 있습니다. 인증번호를 입력해주세요.", response.getMessage());
     }
 
     @Test
@@ -208,7 +208,7 @@ class UserLoginServiceTest {
         FindSmsAuthNumberGetResponse response = userLoginService.checkFindIdSmsAuth(requestDto);
 
         // then
-        assertEquals("회원님의 아이디는 'test@gmail.com' 입니다.", response.getResult());
+        assertEquals("회원님의 아이디는 'test@gmail.com' 입니다.", response.getMessage());
 
     }
 
@@ -228,7 +228,7 @@ class UserLoginServiceTest {
         FindSmsAuthNumberGetResponse response = userLoginService.checkFindIdSmsAuth(requestDto);
 
         // then
-        assertEquals("SMS 인증에 실패하였습니다. \n인증번호를 정상적으로 입력해주세요.", response.getResult());
+        assertEquals("SMS 인증에 실패하였습니다. \n인증번호를 정상적으로 입력해주세요.", response.getMessage());
     }
 
     @Test
@@ -249,7 +249,7 @@ class UserLoginServiceTest {
         FindSmsAuthNumberGetResponse response = userLoginService.checkFindIdSmsAuth(requestDto);
 
         // then
-        assertEquals("인증번호가 만료되었습니다. \n다시 인증번호를 발급받아주세요.", response.getResult());
+        assertEquals("인증번호가 만료되었습니다. \n다시 인증번호를 발급받아주세요.", response.getMessage());
     }
 
     @Test
@@ -270,7 +270,7 @@ class UserLoginServiceTest {
         FindSmsAuthNumberGetResponse response = userLoginService.checkFindIdSmsAuth(requestDto);
 
         // then
-        assertEquals("이미 사용된 인증번호입니다. \n다시 인증번호를 발급받아주세요.", response.getResult());
+        assertEquals("이미 사용된 인증번호입니다. \n다시 인증번호를 발급받아주세요.", response.getMessage());
     }
 
     @Test
@@ -290,7 +290,7 @@ class UserLoginServiceTest {
         FindSmsAuthNumberGetResponse response = userLoginService.checkFindIdSmsAuth(requestDto);
 
         // then
-        assertEquals("입력하신 휴대폰 번호와 일치하는 아이디 정보가 없습니다. \n(고객센터 문의 요망)", response.getResult());
+        assertEquals("입력하신 휴대폰 번호와 일치하는 아이디 정보가 없습니다. \n(고객센터 문의 요망)", response.getMessage());
     }
 
     // ************* 비밀번호 찾기 *************
@@ -315,7 +315,7 @@ class UserLoginServiceTest {
         FindSmsAuthNumberPostResponse response = userLoginService.sendFindPwSmsAuthNumber(requestDto);
 
         // then
-        assertEquals("인증번호를 전송하였습니다.", response.getResult());
+        assertEquals("인증번호를 전송하였습니다.", response.getMessage());
     }
 
     @Test
@@ -332,7 +332,7 @@ class UserLoginServiceTest {
         FindSmsAuthNumberPostResponse response = userLoginService.sendFindPwSmsAuthNumber(requestDto);
 
         // then
-        assertEquals("입력하신 정보와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)", response.getResult());
+        assertEquals("입력하신 정보와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)", response.getMessage());
     }
 
     @Test
@@ -351,7 +351,7 @@ class UserLoginServiceTest {
         FindSmsAuthNumberPostResponse response = userLoginService.sendFindPwSmsAuthNumber(requestDto);
 
         // then
-        assertEquals("유효한 SMS 인증번호가 있습니다. 인증번호를 입력해주세요.", response.getResult());
+        assertEquals("유효한 SMS 인증번호가 있습니다. 인증번호를 입력해주세요.", response.getMessage());
     }
 
     @Test
@@ -399,8 +399,8 @@ class UserLoginServiceTest {
         FindSmsAuthNumberGetResponse response = userLoginService.checkFindPwSmsAuth(requestDto);
 
         assertNotNull(response);
-        assertTrue(response.getResult().contains("비밀번호가"));
-        assertTrue(response.getResult().contains("로 초기화 되었습니다."));
+        assertTrue(response.getMessage().contains("비밀번호가"));
+        assertTrue(response.getMessage().contains("로 초기화 되었습니다."));
     }
 
     @Test
@@ -419,7 +419,7 @@ class UserLoginServiceTest {
         FindSmsAuthNumberGetResponse response = userLoginService.checkFindPwSmsAuth(requestDto);
 
         // then
-        assertEquals("SMS 인증에 실패하였습니다. \n인증번호를 정상적으로 입력해주세요.", response.getResult());
+        assertEquals("SMS 인증에 실패하였습니다. \n인증번호를 정상적으로 입력해주세요.", response.getMessage());
     }
 
     @Test
@@ -440,7 +440,7 @@ class UserLoginServiceTest {
         FindSmsAuthNumberGetResponse response = userLoginService.checkFindPwSmsAuth(requestDto);
 
         // then
-        assertEquals("인증번호가 만료되었습니다. \n다시 인증번호를 발급받아주세요.", response.getResult());
+        assertEquals("인증번호가 만료되었습니다. \n다시 인증번호를 발급받아주세요.", response.getMessage());
     }
 
     @Test
@@ -461,7 +461,7 @@ class UserLoginServiceTest {
         FindSmsAuthNumberGetResponse response = userLoginService.checkFindPwSmsAuth(requestDto);
 
         // then
-        assertEquals("이미 사용된 인증번호입니다. \n다시 인증번호를 발급받아주세요.", response.getResult());
+        assertEquals("이미 사용된 인증번호입니다. \n다시 인증번호를 발급받아주세요.", response.getMessage());
     }
 
     @Test
@@ -482,7 +482,7 @@ class UserLoginServiceTest {
         FindSmsAuthNumberGetResponse response = userLoginService.checkFindPwSmsAuth(requestDto);
 
         // then
-        assertEquals("입력하신 휴대폰 번호와 이메일 정보가 일치하는 사용자가 없습니다. \n(고객센터 문의 요망)", response.getResult());
+        assertEquals("입력하신 휴대폰 번호와 이메일 정보가 일치하는 사용자가 없습니다. \n(고객센터 문의 요망)", response.getMessage());
     }
 
     @Test

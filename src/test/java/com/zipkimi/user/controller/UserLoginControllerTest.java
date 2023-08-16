@@ -26,7 +26,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -64,17 +66,17 @@ class UserLoginControllerTest {
         when(userLoginService.sendFindIdSmsAuthNumber(requestDto)).thenReturn(
                 FindSmsAuthNumberPostResponse
                         .builder()
-                        .result("인증번호를 전송하였습니다.")
+                        .message("인증번호를 전송하였습니다.")
                         .build()
         );
 
         //when
         ResponseEntity<FindSmsAuthNumberPostResponse> response = userLoginController.sendFindIdSmsAuthNumber(requestDto);
-        System.out.println("sendFindIdSmsAuthNumberFailureTest response.getBody().getResult() = " + response.getBody().getResult());
+        System.out.println("sendFindIdSmsAuthNumberFailureTest response.getBody().getResult() = " + response.getBody().getMessage());
 
         //then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("인증번호를 전송하였습니다.", response.getBody().getResult());
+        assertEquals("인증번호를 전송하였습니다.", response.getBody().getMessage());
 
     }
 
@@ -93,17 +95,19 @@ class UserLoginControllerTest {
         when(userLoginService.sendFindIdSmsAuthNumber(requestDto)).thenReturn(
                 FindSmsAuthNumberPostResponse
                         .builder()
-                        .result("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)")
+                        .message("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)")
                         .build()
         );
 
         //when
         ResponseEntity<FindSmsAuthNumberPostResponse> response = userLoginController.sendFindIdSmsAuthNumber(requestDto);
-        System.out.println("sendFindIdSmsAuthNumberFailureTest response.getBody().getResult() = " + response.getBody().getResult());
+        System.out.println("sendFindIdSmsAuthNumberFailureTest response.getBody().getResult() = " + response.getBody().getMessage());
+
+        log.info("******************");
 
         //then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)", response.getBody().getResult());
+        assertEquals("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)", response.getBody().getMessage());
 
     }
 
@@ -127,7 +131,7 @@ class UserLoginControllerTest {
         when(userLoginService.checkFindIdSmsAuth(requestDto)).thenReturn(
                 FindSmsAuthNumberGetResponse
                         .builder()
-                        .result("회원님의 아이디는 'test@gmail.com' 입니다.")
+                        .message("회원님의 아이디는 'test@gmail.com' 입니다.")
                         .build());
 
         when(userRepository.findByPhoneNumber("01094342762")).thenReturn(Optional.of(user));
@@ -135,11 +139,11 @@ class UserLoginControllerTest {
 
         // when
         ResponseEntity<FindSmsAuthNumberGetResponse> response = userLoginController.checkFindIdSmsAuth(requestDto);
-        System.out.println("checkFindIdSmsAuthSuccessTest response.getBody().getResult() = " + response.getBody().getResult());
+        System.out.println("checkFindIdSmsAuthSuccessTest response.getBody().getResult() = " + response.getBody().getMessage());
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("회원님의 아이디는 'test@gmail.com' 입니다.", response.getBody().getResult());
+        assertEquals("회원님의 아이디는 'test@gmail.com' 입니다.", response.getBody().getMessage());
     }
 
     @Test
@@ -157,17 +161,17 @@ class UserLoginControllerTest {
         when(userLoginService.checkFindIdSmsAuth(requestDto)).thenReturn(
                 FindSmsAuthNumberGetResponse
                         .builder()
-                        .result("입력하신 휴대폰 번호와 일치하는 아이디 정보가 없습니다. \n(고객센터 문의 요망)")
+                        .message("입력하신 휴대폰 번호와 일치하는 아이디 정보가 없습니다. \n(고객센터 문의 요망)")
                         .build());
         when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
 
         // when
         ResponseEntity<FindSmsAuthNumberGetResponse> response = userLoginController.checkFindIdSmsAuth(requestDto);
-        System.out.println("checkFindIdSmsAuthFailureTest response.getBody().getResult() = " + response.getBody().getResult());
+        System.out.println("checkFindIdSmsAuthFailureTest response.getBody().getResult() = " + response.getBody().getMessage());
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("입력하신 휴대폰 번호와 일치하는 아이디 정보가 없습니다. \n(고객센터 문의 요망)", response.getBody().getResult());
+        assertEquals("입력하신 휴대폰 번호와 일치하는 아이디 정보가 없습니다. \n(고객센터 문의 요망)", response.getBody().getMessage());
     }
 
     // ************* 비밀번호 찾기 *************
@@ -189,17 +193,17 @@ class UserLoginControllerTest {
         when(userLoginService.sendFindPwSmsAuthNumber(requestDto)).thenReturn(
                 FindSmsAuthNumberPostResponse
                         .builder()
-                        .result("인증번호를 전송하였습니다.")
+                        .message("인증번호를 전송하였습니다.")
                         .build()
         );
 
         //when
         ResponseEntity<FindSmsAuthNumberPostResponse> response = userLoginController.sendFindPwSmsAuthNumber(requestDto);
-        System.out.println("sendFindPwSmsAuthNumberSuccessTest response.getBody().getResult() = " + response.getBody().getResult());
+        System.out.println("sendFindPwSmsAuthNumberSuccessTest response.getBody().getResult() = " + response.getBody().getMessage());
 
         //then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("인증번호를 전송하였습니다.", response.getBody().getResult());
+        assertEquals("인증번호를 전송하였습니다.", response.getBody().getMessage());
 
 
     }
@@ -221,17 +225,17 @@ class UserLoginControllerTest {
         when(userLoginService.sendFindPwSmsAuthNumber(requestDto)).thenReturn(
                 FindSmsAuthNumberPostResponse
                         .builder()
-                        .result("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)")
+                        .message("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)")
                         .build()
         );
 
         //when
         ResponseEntity<FindSmsAuthNumberPostResponse> response = userLoginController.sendFindPwSmsAuthNumber(requestDto);
-        System.out.println("sendFindPwSmsAuthNumberSuccessTest response.getBody().getResult() = " + response.getBody().getResult());
+        System.out.println("sendFindPwSmsAuthNumberSuccessTest response.getBody().getResult() = " + response.getBody().getMessage());
 
         //then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)", response.getBody().getResult());
+        assertEquals("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)", response.getBody().getMessage());
 
     }
 
@@ -258,7 +262,7 @@ class UserLoginControllerTest {
         when(userLoginService.checkFindPwSmsAuth(requestDto)).thenReturn(
                 FindSmsAuthNumberGetResponse
                         .builder()
-                        .result("비밀번호가 '" + newPassword + "'로 초기화 되었습니다.")
+                        .message("비밀번호가 '" + newPassword + "'로 초기화 되었습니다.")
                         .build());
 
         when(userRepository.findByPhoneNumber("01094342762")).thenReturn(Optional.of(user));
@@ -267,11 +271,11 @@ class UserLoginControllerTest {
 
         // when
         ResponseEntity<FindSmsAuthNumberGetResponse> response = userLoginController.checkFindPwSmsAuthAndReset(requestDto);
-        System.out.println("checkFindPwSmsAuthAndResetSuccessTest response.getBody().getResult() = " + response.getBody().getResult());
+        System.out.println("checkFindPwSmsAuthAndResetSuccessTest response.getBody().getResult() = " + response.getBody().getMessage());
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("비밀번호가 '" + newPassword + "'로 초기화 되었습니다.", response.getBody().getResult());
+        assertEquals("비밀번호가 '" + newPassword + "'로 초기화 되었습니다.", response.getBody().getMessage());
     }
 
     @Test
@@ -294,7 +298,7 @@ class UserLoginControllerTest {
         when(userLoginService.checkFindPwSmsAuth(requestDto)).thenReturn(
                 FindSmsAuthNumberGetResponse
                         .builder()
-                        .result("입력하신 휴대폰 번호와 이메일 정보가 일치하는 사용자가 없습니다.")
+                        .message("입력하신 휴대폰 번호와 이메일 정보가 일치하는 사용자가 없습니다.")
                         .build());
 
         when(userRepository.findByPhoneNumber("01012543658")).thenReturn(Optional.of(user));
@@ -303,11 +307,11 @@ class UserLoginControllerTest {
 
         // when
         ResponseEntity<FindSmsAuthNumberGetResponse> response = userLoginController.checkFindPwSmsAuthAndReset(requestDto);
-        System.out.println("checkFindPwSmsAuthAndResetFailureTest response.getBody().getResult() = " + response.getBody().getResult());
+        System.out.println("checkFindPwSmsAuthAndResetFailureTest response.getBody().getResult() = " + response.getBody().getMessage());
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("입력하신 휴대폰 번호와 이메일 정보가 일치하는 사용자가 없습니다.", response.getBody().getResult());
+        assertEquals("입력하신 휴대폰 번호와 이메일 정보가 일치하는 사용자가 없습니다.", response.getBody().getMessage());
     }
 
     //임시 비밀번호 생성
