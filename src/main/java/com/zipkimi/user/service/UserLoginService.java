@@ -2,7 +2,6 @@ package com.zipkimi.user.service;
 
 import com.zipkimi.global.exception.BadRequestException;
 import com.zipkimi.global.service.SmsService;
-import com.zipkimi.global.utils.CodeConstant.SMS_AUTH_CODE;
 import com.zipkimi.user.dto.request.FindIdCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.FindPwCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.PassResetSmsAuthNumberPostRequest;
@@ -38,6 +37,61 @@ public class UserLoginService {
 
     // ************* 아이디 찾기 *************
 
+    // 아이디 찾기 - SMS 인증번호 검증 & 휴대폰 번호로 가입된 회원 이메일 조회
+    public FindSmsAuthNumberGetResponse checkFindIdSmsAuth(FindIdCheckSmsGetRequest requestDto) {
+
+        // #1. SMS 인증번호를 ID를 통해 DB 데이터 검증 후
+        Optional<SmsAuthEntity> smsAuth = smsAuthRepository.findById(requestDto.getSmsAuthId());
+
+        if (smsAuth.isEmpty() || !smsAuth.get().getSmsAuthNumber()
+                .equals(requestDto.getSmsAuthNumber())) {
+            return FindSmsAuthNumberGetResponse
+                    .builder()
+                    .result("SMS 인증에 실패하였습니다. \n인증번호를 정상적으로 입력해주세요.")
+                    .build();
+        }
+
+        // 2. SMS 인증번호 만료시간 검증
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime expirationTime = smsAuth.get().getExpirationTime();
+
+        if (currentTime.isAfter(expirationTime)) {
+            return FindSmsAuthNumberGetResponse
+                    .builder()
+                    .result("인증번호가 만료되었습니다. \n다시 인증번호를 발급받아주세요.")
+                    .build();
+        }
+
+        if (Boolean.TRUE.equals(smsAuth.get().getIsUse())) {
+            return FindSmsAuthNumberGetResponse
+                    .builder()
+                    .result("이미 사용된 인증번호입니다. \n다시 인증번호를 발급받아주세요.")
+                    .build();
+        }
+
+        // SMS 인증번호를 여러 번 사용하는 것 방지
+        smsAuth.get().setIsUse(true);
+        smsAuthRepository.save(smsAuth.get());
+
+        //3. 휴대폰 번호로 일치하는 회원 조회
+        Optional<UserEntity> user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber());
+        String email = user.map(UserEntity::getEmail).orElse(null);
+
+        if (email != null) {
+            // 휴대폰 번호로 가입된 회원이 존재할 경우 : Email 반환
+            return FindSmsAuthNumberGetResponse
+                    .builder()
+                    .result("회원님의 아이디는 '" + email + "' 입니다.")
+                    .build();
+        } else {
+            // 휴대폰 번호로 가입된 회원이 존재하지 않을 경우 : 고객센터 문의 요망 반환 안내
+            return FindSmsAuthNumberGetResponse
+                    .builder()
+                    .result("입력하신 휴대폰 번호와 일치하는 아이디 정보가 없습니다. \n(고객센터 문의 요망)")
+                    .build();
+        }
+    }
+
     // 아이디 찾기 - SMS 인증번호 전송
     public FindSmsAuthNumberPostResponse sendFindIdSmsAuthNumber(
             SmsAuthNumberPostRequest requestDto) {
@@ -47,20 +101,14 @@ public class UserLoginService {
 
         if (user.isEmpty()) {
             return FindSmsAuthNumberPostResponse.builder()
-                    .message("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)")
+                    .result("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)")
                     .build();
         }
 
-        // 만료되지 않은 SMS 인증번호 있는지 조회
+        // 만료되지 않은 인증번호 있는지 조회
         SmsAuthEntity existingSmsAuth =
-                smsAuthRepository.findValidSmsAuthByPhoneNumberAndType(requestDto.getPhoneNumber(),
-                        LocalDateTime.now(), SMS_AUTH_CODE.FIND_ID.getValue());
-
-        if (existingSmsAuth != null) {
-            return FindSmsAuthNumberPostResponse.builder()
-                    .message("유효한 SMS 인증번호가 있습니다. 인증번호를 입력해주세요.")
-                    .build();
-        }
+                smsAuthRepository.findValidSmsAuthByPhoneNumber(requestDto.getPhoneNumber(),
+                        LocalDateTime.now());
 
         String randomNumber;
         SmsAuthEntity smsAuthEntitySaved = null;
@@ -78,7 +126,7 @@ public class UserLoginService {
             smsAuth.setSmsAuthNumber(randomNumber);
             smsAuth.setIsAuthenticate(false);
             smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(5L));
-            smsAuth.setSmsAuthType(SMS_AUTH_CODE.FIND_ID.getValue());
+            smsAuth.setSmsAuthType("findId");
 
             // SMS 내용 설정
             smsAuth.setContent("[집킴이] 아이디 찾기 인증번호는 [" + randomNumber + "] 입니다. 인증번호를 정확히 입력해주세요.");
@@ -95,66 +143,9 @@ public class UserLoginService {
         }
 
         return FindSmsAuthNumberPostResponse.builder()
-                .message("인증번호를 전송하였습니다.")
+                .result("인증번호를 전송하였습니다.")
                 .build();
     }
-
-    // 아이디 찾기 - SMS 인증번호 검증 & 휴대폰 번호로 가입된 회원 이메일 조회
-    public FindSmsAuthNumberGetResponse checkFindIdSmsAuth(FindIdCheckSmsGetRequest requestDto) {
-
-        // #1. SMS 인증번호를 ID를 통해 DB 데이터 검증 후
-        Optional<SmsAuthEntity> smsAuth = smsAuthRepository.findById(requestDto.getSmsAuthId());
-
-        if (smsAuth.isEmpty() || !smsAuth.get().getSmsAuthNumber()
-                .equals(requestDto.getSmsAuthNumber())) {
-            return FindSmsAuthNumberGetResponse
-                    .builder()
-                    .message("SMS 인증에 실패하였습니다. \n인증번호를 정상적으로 입력해주세요.")
-                    .build();
-        }
-
-        // 2. SMS 인증번호 만료시간 검증
-        LocalDateTime currentTime = LocalDateTime.now();
-        LocalDateTime expirationTime = smsAuth.get().getExpirationTime();
-
-        if (currentTime.isAfter(expirationTime)) {
-            return FindSmsAuthNumberGetResponse
-                    .builder()
-                    .message("인증번호가 만료되었습니다. \n다시 인증번호를 발급받아주세요.")
-                    .build();
-        }
-
-        if (Boolean.TRUE.equals(smsAuth.get().getIsUse())) {
-            return FindSmsAuthNumberGetResponse
-                    .builder()
-                    .message("이미 사용된 인증번호입니다. \n다시 인증번호를 발급받아주세요.")
-                    .build();
-        }
-
-        // SMS 인증번호를 여러 번 사용하는 것 방지
-        smsAuth.get().setIsUse(true);
-        smsAuthRepository.save(smsAuth.get());
-
-        //3. 휴대폰 번호로 일치하는 회원 조회
-        Optional<UserEntity> user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber());
-        String email = user.map(UserEntity::getEmail).orElse(null);
-
-        if (email != null) {
-            // 휴대폰 번호로 가입된 회원이 존재할 경우 : Email 반환
-            return FindSmsAuthNumberGetResponse
-                    .builder()
-                    .message("회원님의 아이디는 '" + email + "' 입니다.")
-                    .build();
-        } else {
-            // 휴대폰 번호로 가입된 회원이 존재하지 않을 경우 : 고객센터 문의 요망 반환 안내
-            return FindSmsAuthNumberGetResponse
-                    .builder()
-                    .message("입력하신 휴대폰 번호와 일치하는 아이디 정보가 없습니다. \n(고객센터 문의 요망)")
-                    .build();
-        }
-    }
-
-
 
     // ************* 비밀번호 찾기 *************
 
@@ -162,25 +153,19 @@ public class UserLoginService {
     public FindSmsAuthNumberPostResponse sendFindPwSmsAuthNumber(
             PassResetSmsAuthNumberPostRequest requestDto) {
 
-        // 휴대폰 번호와 이메일로 가입된 회원 확인
-        Optional<UserEntity> user = userRepository.findByPhoneNumberAndEmail(requestDto.getPhoneNumber(), requestDto.getEmail());
+        // 휴대폰 번호로 가입된 회원 확인
+        Optional<UserEntity> user = userRepository.findByPhoneNumber(requestDto.getPhoneNumber());
 
         if (user.isEmpty()) {
             return FindSmsAuthNumberPostResponse.builder()
-                    .message("입력하신 정보와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)")
+                    .result("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)")
                     .build();
         }
 
         // 만료되지 않은 SMS 인증번호 있는지 조회
         SmsAuthEntity existingSmsAuth =
-                smsAuthRepository.findValidSmsAuthByPhoneNumberAndType(requestDto.getPhoneNumber(),
-                        LocalDateTime.now(), SMS_AUTH_CODE.FIND_PW.getValue());
-
-        if (existingSmsAuth != null) {
-            return FindSmsAuthNumberPostResponse.builder()
-                    .message("유효한 SMS 인증번호가 있습니다. 인증번호를 입력해주세요.")
-                    .build();
-        }
+                smsAuthRepository.findValidSmsAuthByPhoneNumber(requestDto.getPhoneNumber(),
+                        LocalDateTime.now());
 
         String randomNumber;
         SmsAuthEntity smsAuthEntitySaved = null;
@@ -199,7 +184,7 @@ public class UserLoginService {
             smsAuth.setSmsAuthNumber(randomNumber);
             smsAuth.setIsAuthenticate(false);
             smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(5L));
-            smsAuth.setSmsAuthType(SMS_AUTH_CODE.FIND_PW.getValue());
+            smsAuth.setSmsAuthType("findPw");
 
             // SMS 내용 설정
             smsAuth.setContent(
@@ -217,7 +202,7 @@ public class UserLoginService {
         }
 
         return FindSmsAuthNumberPostResponse.builder()
-                .message("인증번호를 전송하였습니다.")
+                .result("인증번호를 전송하였습니다.")
                 .build();
     }
 
@@ -231,7 +216,7 @@ public class UserLoginService {
                 .equals(requestDto.getSmsAuthNumber())) {
             return FindSmsAuthNumberGetResponse
                     .builder()
-                    .message("SMS 인증에 실패하였습니다. \n인증번호를 정상적으로 입력해주세요.")
+                    .result("SMS 인증에 실패하였습니다. \n인증번호를 정상적으로 입력해주세요.")
                     .build();
         }
 
@@ -242,14 +227,14 @@ public class UserLoginService {
         if (currentTime.isAfter(expirationTime)) {
             return FindSmsAuthNumberGetResponse
                     .builder()
-                    .message("인증번호가 만료되었습니다. \n다시 인증번호를 발급받아주세요.")
+                    .result("인증번호가 만료되었습니다. \n다시 인증번호를 발급받아주세요.")
                     .build();
         }
 
         if (Boolean.TRUE.equals(smsAuth.get().getIsUse())) {
             return FindSmsAuthNumberGetResponse
                     .builder()
-                    .message("이미 사용된 인증번호입니다. \n다시 인증번호를 발급받아주세요.")
+                    .result("이미 사용된 인증번호입니다. \n다시 인증번호를 발급받아주세요.")
                     .build();
         }
 
@@ -271,12 +256,12 @@ public class UserLoginService {
 
             return FindSmsAuthNumberGetResponse
                     .builder()
-                    .message("비밀번호가 '" + newPassword + "'로 초기화 되었습니다.")
+                    .result("비밀번호가 '" + newPassword + "'로 초기화 되었습니다.")
                     .build();
         } else {
             return FindSmsAuthNumberGetResponse
                     .builder()
-                    .message("입력하신 휴대폰 번호와 이메일 정보가 일치하는 사용자가 없습니다. \n(고객센터 문의 요망)")
+                    .result("입력하신 휴대폰 번호와 이메일 정보가 일치하는 사용자가 없습니다.")
                     .build();
         }
 
