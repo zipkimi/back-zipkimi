@@ -2,6 +2,7 @@ package com.zipkimi.user.service;
 
 import com.zipkimi.global.exception.BadRequestException;
 import com.zipkimi.global.service.SmsService;
+import com.zipkimi.global.utils.CodeConstant.SMS_AUTH_CODE;
 import com.zipkimi.user.dto.request.FindIdCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.FindPwCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.PassResetSmsAuthNumberPostRequest;
@@ -53,7 +54,7 @@ public class UserLoginService {
         // 만료되지 않은 SMS 인증번호 있는지 조회
         SmsAuthEntity existingSmsAuth =
                 smsAuthRepository.findValidSmsAuthByPhoneNumberAndType(requestDto.getPhoneNumber(),
-                        LocalDateTime.now(), "findId");
+                        LocalDateTime.now(), SMS_AUTH_CODE.FIND_ID.getValue());
 
         if (existingSmsAuth != null) {
             return FindSmsAuthNumberPostResponse.builder()
@@ -77,7 +78,7 @@ public class UserLoginService {
             smsAuth.setSmsAuthNumber(randomNumber);
             smsAuth.setIsAuthenticate(false);
             smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(5L));
-            smsAuth.setSmsAuthType("findId");
+            smsAuth.setSmsAuthType(SMS_AUTH_CODE.FIND_ID.getValue());
 
             // SMS 내용 설정
             smsAuth.setContent("[집킴이] 아이디 찾기 인증번호는 [" + randomNumber + "] 입니다. 인증번호를 정확히 입력해주세요.");
@@ -173,7 +174,7 @@ public class UserLoginService {
         // 만료되지 않은 SMS 인증번호 있는지 조회
         SmsAuthEntity existingSmsAuth =
                 smsAuthRepository.findValidSmsAuthByPhoneNumberAndType(requestDto.getPhoneNumber(),
-                        LocalDateTime.now(), "findPw");
+                        LocalDateTime.now(), SMS_AUTH_CODE.FIND_PW.getValue());
 
         if (existingSmsAuth != null) {
             return FindSmsAuthNumberPostResponse.builder()
@@ -198,7 +199,7 @@ public class UserLoginService {
             smsAuth.setSmsAuthNumber(randomNumber);
             smsAuth.setIsAuthenticate(false);
             smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(5L));
-            smsAuth.setSmsAuthType("findPw");
+            smsAuth.setSmsAuthType(SMS_AUTH_CODE.FIND_PW.getValue());
 
             // SMS 내용 설정
             smsAuth.setContent(

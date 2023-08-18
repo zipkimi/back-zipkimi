@@ -10,13 +10,16 @@ public class CodeConstant {
 
     @Getter
     @AllArgsConstructor
-    public enum SMS_CODE {
+    public enum SMS_AUTH_CODE {
+
         // 가입
-        JOIN(""),
+        JOIN("join"),
+
         //아이디 찾기
-        ID(""),
+        FIND_ID("findId"),
+
         //비밀번호 찾기
-        PW("");
+        FIND_PW("findPw");
 
         final String value;
     }
