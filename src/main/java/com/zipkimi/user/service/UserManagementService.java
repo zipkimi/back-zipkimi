@@ -125,11 +125,11 @@ public class UserManagementService {
         SmsAuthEntity smsAuth = optionalSmsAuth.get();
         // 이미 만료된 인증번호
         if (smsAuth.getExpirationTime().isBefore(LocalDateTime.now())) {
-            message = "인증번호 유효시간이 만료됐습니다. 재전송해주세요.";
+            throw new BadRequestException("인증번호 유효시간이 만료됐습니다. 재전송해주세요.");
         }
         // 일치하지 않는 인증번호
         if(!requestDto.getSmsAuthNumber().equals(smsAuth.getSmsAuthNumber())){
-            message = "인증번호를 확인해주세요.";
+            throw new BadRequestException("인증번호를 확인해주세요.");
         }
         return SmsAuthNumberGetResponse.builder().message(message).build();
     }
