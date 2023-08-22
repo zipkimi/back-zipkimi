@@ -88,55 +88,40 @@ public class UserLoginService {
     }
 
     @Transactional
-    public void login(TokenRequest tokenRequest, String userAgent) {
+    public TokenResponse login(UserLoginRequest userLoginRequest) {
 
-        RefreshTokenEntity refreshToken =
-                RefreshTokenEntity.builder().email(tokenRequest.getRefreshToken()).token(tokenRequest.getRefreshToken()).build();
-        System.out.println("refreshToken = " + refreshToken);
+        // 회원 정보 존재하는지 확인
+        Optional<UserEntity> user = userRepository.findByEmail(userLoginRequest.getEmail());
 
-        String loginUserEmail = refreshToken.getEmail();
-        System.out.println("loginUserEmail = " + loginUserEmail);
-        System.out.println("userAgent = " + userAgent);
+        // Login Email (ID) / PW 를 기반으로 AuthenticationToken 생성
+        UsernamePasswordAuthenticationToken authenticationToken = userLoginRequest.toAuthentication();
+        System.out.println("login authenticationToken = " + authenticationToken);
+        System.out.println("login authenticationToken.getName() = " + authenticationToken.getName());
 
-        //여기서 refresh Token과 해당 agent로 저장되어있는지 확인을 해야한다.
-        if(refreshTokenRepository.existsByEmailAndUserAgent(loginUserEmail, userAgent)){
-            log.info("기존의 존재하는 refresh 토큰 삭제");
-            refreshTokenRepository.deleteByEmailAndUserAgent(loginUserEmail, userAgent);
-        }
+        // 실제로 검증 (사용자 비밀번호 체크) 이 이루어지는 부분
+        //    authenticate 메서드가 실행이 될 때 CustomUserDetailsService 에서 만들었던 loadUserByUsername 메서드가 실행됨
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
+        // 4. 인증 정보를 기반으로 JWT 토큰 생성
+        TokenResponse tokenResponse = jwtTokenProvider.createToken(authentication);
 
-//        // 회원 정보 존재하는지 확인
-//        Optional<UserEntity> user = userRepository.findByEmail(userLoginRequest.getEmail());
-//
-//        // Login Email (ID) / PW 를 기반으로 AuthenticationToken 생성
-//        UsernamePasswordAuthenticationToken authenticationToken = userLoginRequest.toAuthentication();
-//        System.out.println("login authenticationToken = " + authenticationToken);
-//        System.out.println("login authenticationToken.getName() = " + authenticationToken.getName());
-//
-//        // 실제로 검증 (사용자 비밀번호 체크) 이 이루어지는 부분
-//        //    authenticate 메서드가 실행이 될 때 CustomUserDetailsService 에서 만들었던 loadUserByUsername 메서드가 실행됨
-//        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-//
-//        // 4. 인증 정보를 기반으로 JWT 토큰 생성
-//        TokenResponse tokenResponse = jwtTokenProvider.createToken(authentication);
-//
-//        // 5. RefreshToken DB 저장
-//        RefreshTokenEntity refreshToken = RefreshTokenEntity.builder()
-//                .email(authenticationToken.getName())
-//                .userId(user.get().getUserId())
-//                .token(tokenResponse.getRefreshToken())
-//                .build();
+        // 5. RefreshToken DB 저장
+        RefreshTokenEntity refreshToken = RefreshTokenEntity.builder()
+                .email(authenticationToken.getName())
+                .userId(user.get().getUserId())
+                .token(tokenResponse.getRefreshToken())
+                .build();
 
         refreshTokenRepository.save(refreshToken);
 
-//        // 5. 토큰 발급
-//        return TokenResponse.builder()
-//                .message("로그인에 성공하였습니다.")
-//                .grantType(tokenRequest.ge())
-//                .accessToken(tokenResponse.getAccessToken())
-//                .refreshToken(tokenResponse.getRefreshToken())
-//                .accessTokenExpireDate(tokenResponse.getAccessTokenExpireDate())
-//                .build();
+        // 5. 토큰 발급
+        return TokenResponse.builder()
+                .message("로그인에 성공하였습니다.")
+                .grantType(tokenResponse.getGrantType())
+                .accessToken(tokenResponse.getAccessToken())
+                .refreshToken(tokenResponse.getRefreshToken())
+                .accessTokenExpireDate(tokenResponse.getAccessTokenExpireDate())
+                .build();
     }
 
     @Transactional

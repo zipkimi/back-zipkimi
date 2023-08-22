@@ -1,7 +1,5 @@
 package com.zipkimi.global.jwt;
 
-import com.zipkimi.entity.UserRole;
-import com.zipkimi.global.jwt.dto.request.TokenRequest;
 import com.zipkimi.global.jwt.dto.response.TokenResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -136,31 +134,4 @@ public class JwtTokenProvider {
     }
 
 
-    public TokenRequest createAccessToken(String userEmail, UserRole roles) {
-
-        Claims claims = Jwts.claims().setSubject(userEmail); // JWT payload 에 저장되는 정보단위
-        claims.put("roles", roles); // 정보는 key / value 쌍으로 저장된다.
-        Date now = new Date();
-
-        //Access Token
-        String accessToken = Jwts.builder()
-                .setClaims(claims) // 정보 저장
-                .setIssuedAt(now) // 토큰 발행 시간 정보
-                .setExpiration(new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // set Expire Time
-                .signWith(key, SignatureAlgorithm.HS256)  // 사용할 암호화 알고리즘과
-                // signature 에 들어갈 secret값 세팅
-                .compact();
-
-        //Refresh Token
-        String refreshToken =  Jwts.builder()
-                .setClaims(claims) // 정보 저장
-                .setIssuedAt(now) // 토큰 발행 시간 정보
-                .setExpiration(new Date(now.getTime() + REFRESH_TOKEN_EXPIRE_TIME)) // set Expire Time
-                .signWith(key, SignatureAlgorithm.HS256)  // 사용할 암호화 알고리즘과
-                // signature 에 들어갈 secret값 세팅
-                .compact();
-
-        return TokenRequest.builder().accessToken(accessToken).refreshToken(refreshToken).key(userEmail).build();
-
-    }
 }

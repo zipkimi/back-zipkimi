@@ -21,14 +21,11 @@ public class RefreshTokenEntity extends BaseEntity {
     @Column(name = "refresh_token_id")
     private Long refreshTokenId;
 
-    @Column(name = "REFRESH_TOKEN", nullable = false)
+    @Column(nullable = false)
     private String refreshToken;
 
     private Long userId;
     private String email;
-
-    @Column(name ="USER_AGENT", nullable = false)
-    private String userAgent;
 
     @Builder
     public RefreshTokenEntity(String token, String email, Long userId) {
