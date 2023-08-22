@@ -59,4 +59,7 @@ public class UserEntity extends BaseEntity implements Serializable {
 //    @Builder.Default
 //    private List<UserRole> roles = new ArrayList<>();
 
+    //TODO CustomUserDetails 수정 테스트 중
+
+
 }

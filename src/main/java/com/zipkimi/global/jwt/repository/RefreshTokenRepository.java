@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity, Long> {
 
     Optional<RefreshTokenEntity> findByEmail(String email);
+    Optional<RefreshTokenEntity> findByUserId(String key);
+
 }

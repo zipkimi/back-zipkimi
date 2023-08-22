@@ -1,10 +1,14 @@
 package com.zipkimi.global.security;
 
-import com.zipkimi.global.security.exception.CustomUserNotFoundException;
+import com.zipkimi.entity.UserEntity;
 import com.zipkimi.repository.UserRepository;
+import java.util.Collections;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,12 +23,27 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     @Transactional
-    public UserDetails loadUserByUsername(String userPk) throws UsernameNotFoundException {
-        log.info("===================== UserDetails loadUserByUsername userPk = " + userPk);
-
-
-        return (UserDetails) userRepository.findById(Long.parseLong(userPk))
-                .orElseThrow(CustomUserNotFoundException::new);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        System.out.println(" ===== CustomUserDetailsService loadUserByUsername ===== ");
+        System.out.println("CustomUserDetailsService email = " + email);
+        return userRepository.findByEmail(email)
+                .map(this::createUserDetails)
+                .orElseThrow(() -> new UsernameNotFoundException(email + " -> 데이터베이스에서 찾을 수 없습니다."));
     }
+
+    // DB 에 User 값이 존재한다면 UserDetails 객체로 만들어서 리턴
+    private UserDetails createUserDetails(UserEntity user) {
+        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(user.getRole().toString());
+        System.out.println(" ===== CustomUserDetailsService createUserDetails ===== ");
+        System.out.println("CustomUserDetailsService grantedAuthority = " + grantedAuthority);
+        System.out.println("CustomUserDetailsService user = " + user);
+
+        return new User(
+                String.valueOf(user.getUserId()),
+                user.getPassword(),
+                Collections.singleton(grantedAuthority)
+        );
+    }
+
 
 }

@@ -1,12 +1,15 @@
 package com.zipkimi.global.config;
 
+import com.zipkimi.global.jwt.JwtTokenProvider;
 import com.zipkimi.global.jwt.config.CustomAccessDeniedHandler;
 import com.zipkimi.global.jwt.config.CustomAuthenticationEntryPoint;
 import com.zipkimi.global.jwt.filter.JwtAuthenticationFilter;
-import com.zipkimi.global.jwt.JwtTokenProvider;
+import com.zipkimi.global.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -22,6 +25,7 @@ public class SecurityConfig  {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     // 회원가입 시 비밀번호 암호화를 위한 PasswordEncoder Bean 등록
     @Bean
@@ -51,6 +55,8 @@ public class SecurityConfig  {
                 // 만약, 권한별 접근 설정을 하고 싶으면 hasRole 사용
                 // 특정 요청에 대한 권한 체크 (ROLE이 USER일 때만 이용 가능)
                 //.antMatchers("/api/v1/users/**").hasRole("USER")
+
+                // 테스트를 위해서 회원가입 로직의 권한을 USER로 줌
                 .antMatchers("/api/v1/userMgmt/**").hasRole("USER")
 
                 // 그 외 항목 전부 인증 적용
@@ -69,7 +75,7 @@ public class SecurityConfig  {
                 // Jwt Access Denial handler (일반 유저가 시공사 관련 페이지에 접속할 경우 등)
                 // 인가에 실패했을 때 예외를 발생시키는 handler 등록
                 .and()
-                .exceptionHandling().accessDeniedHandler(new CustomAccessDeniedHandler());
+                .exceptionHandling().accessDeniedHandler(customAccessDeniedHandler);
 
         return http.build();
     }

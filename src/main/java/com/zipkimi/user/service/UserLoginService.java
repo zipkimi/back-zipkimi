@@ -28,6 +28,8 @@ import java.util.Random;
 import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -54,6 +56,7 @@ public class UserLoginService {
     /* JWT 관련 */
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     // ************* 로그인 *************
 
@@ -61,7 +64,6 @@ public class UserLoginService {
 
         // TODO 회원가입 로직 개발 후 삭제 필요
         // TODO 로그인 테스트를 위한 간단 일반 회원 가입 로직
-
         Optional<UserEntity> userEntityOptional = userRepository.findByEmail(userLoginRequest.getEmail());
         if (userEntityOptional.isPresent()) {
             return BaseResponse.builder()
@@ -80,15 +82,6 @@ public class UserLoginService {
 
         userRepository.save(userEntity);
 
-        Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
-        String username = loggedInUser.getName();
-        String getAuthorities = loggedInUser.getAuthorities().toString();
-
-        System.out.println("===============================================================");
-        System.out.println("SecurityContextHolder username = " + username);
-        System.out.println("SecurityContextHolder getAuthorities = " + getAuthorities);
-        System.out.println("===============================================================");
-
         return BaseResponse.builder()
                 .message("일반 회원 가입 테스트에 성공했습니다.")
                 .build();
@@ -99,53 +92,32 @@ public class UserLoginService {
         // 회원 정보 존재하는지 확인
         Optional<UserEntity> user = userRepository.findByEmail(userLoginRequest.getEmail());
 
-        if (user.isEmpty()) {
-            return TokenResponse
-                    .builder()
-                    .message("존재하지 않는 회원입니다.")
-                    .build();
-        }
+        // Login Email (ID) / PW 를 기반으로 AuthenticationToken 생성
+        UsernamePasswordAuthenticationToken authenticationToken = userLoginRequest.toAuthentication();
 
-        System.out.println("userLoginRequest.getPassword() = " + userLoginRequest.getPassword());
-        System.out.println("user.get().getPassword() = " + user.get().getPassword());
+        // 실제로 검증 (사용자 비밀번호 체크) 이 이루어지는 부분
+        //    authenticate 메서드가 실행이 될 때 CustomUserDetailsService 에서 만들었던 loadUserByUsername 메서드가 실행됨
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
+        // 4. 인증 정보를 기반으로 JWT 토큰 생성
+        TokenResponse tokenResponse = jwtTokenProvider.createTokenDto(authentication);
 
-        // 회원 패스워드 일치 여부 확인
-        if (!passwordEncoder.matches(userLoginRequest.getPassword(), user.get().getPassword()))
-            return TokenResponse
-                    .builder()
-                    .message("비밀번호가 일치하지 않습니다.")
-                    .build();
-
-        // AccessToken, RefreshToken 발급
-        TokenResponse tokenDto = jwtTokenProvider.createTokenDto(
-                String.valueOf(user.get().getUserId()),
-                Collections.singletonList(UserRole.ROLE_USER.name()));
-
-        // RefreshToken 저장
+        // 5. RefreshToken DB 저장
         RefreshTokenEntity refreshToken = RefreshTokenEntity.builder()
-                .email(user.get().getEmail())
+                .email(authenticationToken.getName())
                 .userId(user.get().getUserId())
-                .token(tokenDto.getRefreshToken())
+                .token(tokenResponse.getRefreshToken())
                 .build();
 
         refreshTokenRepository.save(refreshToken);
 
-        Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
-        String username = loggedInUser.getName();
-        String getAuthorities = loggedInUser.getAuthorities().toString();
-
-        System.out.println("===============================================================");
-        System.out.println("SecurityContextHolder username = " + username);
-        System.out.println("SecurityContextHolder getAuthorities = " + getAuthorities);
-        System.out.println("===============================================================");
-
+        // 5. 토큰 발급
         return TokenResponse.builder()
                 .message("로그인에 성공하였습니다.")
-                .grantType(tokenDto.getGrantType())
-                .accessToken(tokenDto.getAccessToken())
-                .refreshToken(tokenDto.getRefreshToken())
-                .accessTokenExpireDate(tokenDto.getAccessTokenExpireDate())
+                .grantType(tokenResponse.getGrantType())
+                .accessToken(tokenResponse.getAccessToken())
+                .refreshToken(tokenResponse.getRefreshToken())
+                .accessTokenExpireDate(tokenResponse.getAccessTokenExpireDate())
                 .build();
     }
 

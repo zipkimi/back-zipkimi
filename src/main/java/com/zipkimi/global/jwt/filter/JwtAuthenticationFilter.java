@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
@@ -34,6 +35,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String BEARER_PREFIX = "Bearer ";
+
     private final JwtTokenProvider jwtTokenProvider;
 
     // HTTP 요청이 오면 WAS(tomcat)가 HttpServletRequest, HttpServletResponse 객체를 만들어줌
@@ -44,88 +48,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException  {
 
-        log.info("============================= JwtAuthenticationFilter request = "+ request);
-        log.info("============================= JwtAuthenticationFilter response = " + response);
-        log.info("============================= JwtAuthenticationFilter filterChain = " + filterChain);
+        // 1. Request Header 에서 토큰을 꺼냄
+        String jwt = resolveToken(request);
 
-        // WebSecurityConfig 에서 보았던 UsernamePasswordAuthenticationFilter 보다 먼저 동작을 하게 됩니다.
-        // Access / Refresh 헤더에서 토큰을 가져옴.
-        String accessToken = jwtTokenProvider.getHeaderToken(request, "Access");
-        String refreshToken = jwtTokenProvider.getHeaderToken(request, "Refresh");
-
-        log.info("============================= JwtAuthenticationFilter accessToken1 = "+ accessToken);
-        log.info("============================= JwtAuthenticationFilter refreshToken1 = " + refreshToken);
-
-        // AccessToken이 null이 아니면서 유효한 토큰이라면
-        if (accessToken != null && jwtTokenProvider.validationToken(accessToken)) {
-            log.info("============================= JwtAuthenticationFilter accessToken2 = " + accessToken);
-            log.info("=============================  JwtAuthenticationFilter refreshToken2 = " + refreshToken);
-
-            // setAuthentication를 통해 security context에 인증 정보 저장
-            // 이때 accessToken으로 회원 정보 email 추출
-            setAuthentication(jwtTokenProvider.getEmailFromToken(accessToken));
-            log.info("=============================  JwtAuthenticationFilter jwtTokenProvider.getEmailFromToken(accessToken) = "
-                    + jwtTokenProvider.getEmailFromToken(accessToken));
-
+        // 2. validateToken 으로 토큰 유효성 검사
+        // 정상 토큰이면 해당 토큰으로 Authentication 을 가져와서 SecurityContext 에 저장
+        if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
+            Authentication authentication = jwtTokenProvider.getAuthentication(jwt);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
-        // AccessToken이 만료 & RefreshToken 존재
-        else if (refreshToken != null) {
-            // RefreshToken 검증 && RefreshToken DB에서 토큰 존재유무 확인
-            boolean isRefreshToken = jwtTokenProvider.refreshTokenValidation(refreshToken);
-            log.info("=============================  JwtAuthenticationFilter accessToken3 = " + accessToken);
-            log.info("=============================  JwtAuthenticationFilter refreshToken3 = " + refreshToken);
-            log.info("=============================  JwtAuthenticationFilter isRefreshToken = " + refreshToken);
-
-            // RefreshToken이 유효하고 RefreshToken이 DB와 비교했을 때 똑같다면
-            if (isRefreshToken) {
-                // RefreshToken으로 아이디 정보 가져오기
-                String userPk = jwtTokenProvider.getEmailFromToken(refreshToken);
-
-                log.info("=============================  JwtAuthenticationFilter userPk = " + userPk);
-
-                TokenResponse newAccessToken = jwtTokenProvider.createTokenDto(userPk,
-                        Collections.singletonList(UserRole.ROLE_USER.name()));
-                log.info("=============================  JwtAuthenticationFilter newAccessToken = " + newAccessToken);
-
-                // Header에 RefreshToken 추가
-                jwtTokenProvider.setHeaderRefreshToken(response, refreshToken);
-                // Header에 AccessToken 추가
-                jwtTokenProvider.setHeaderAccessToken(response, String.valueOf(newAccessToken));
-                // Security context에 인증 정보 넣기
-                setAuthentication(jwtTokenProvider.getEmailFromToken(String.valueOf(newAccessToken)));
-
-                log.info("============================= JwtAuthenticationFilter.getEmailFromToken(String.valueOf(newAccessToken) = "
-                        + jwtTokenProvider.getEmailFromToken(String.valueOf(newAccessToken)));
-                }
-                // RefreshToken이 만료 || RefreshToken이 DB와 비교했을때 똑같지 않다면
-                else {
-                    jwtExceptionHandler(response, "RefreshToken Expired", HttpStatus.BAD_REQUEST);
-                    return;
-                }
-            }
         filterChain.doFilter(request, response);
     }
 
-    // SecurityContext 에 Authentication 객체를 저장합니다.
-    public void setAuthentication(String email) {
-        Authentication authentication = jwtTokenProvider.createAuthentication(email);
-        // security가 만들어주는 securityContextHolder 그 안에 authentication을 넣어줍니다.
-        // security가 securitycontextholder에서 인증 객체를 확인하는데
-        // jwtAuthfilter에서 authentication을 넣어주면 UsernamePasswordAuthenticationFilter 내부에서 인증이 된 것을 확인하고 추가적인 작업을 진행하지 않습니다.
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
-
-    // Jwt 예외처리
-    public void jwtExceptionHandler(HttpServletResponse response, String msg, HttpStatus status) {
-        response.setStatus(status.value());
-        response.setContentType("application/json");
-        try {
-            String json = new ObjectMapper().writeValueAsString(new BaseResponse(msg));
-            response.getWriter().write(json);
-        } catch (Exception e) {
-            log.error(e.getMessage());
+    // Request Header 에서 토큰 정보를 꺼내오기
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
+            return bearerToken.split(" ")[1].trim();
         }
+        return null;
     }
 
 }
