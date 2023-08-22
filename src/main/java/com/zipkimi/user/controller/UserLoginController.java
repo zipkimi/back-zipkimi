@@ -1,9 +1,11 @@
 package com.zipkimi.user.controller;
 
+import com.zipkimi.global.dto.response.TokenResponse;
 import com.zipkimi.user.dto.request.FindPwCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.PassResetSmsAuthNumberPostRequest;
 import com.zipkimi.user.dto.request.FindIdCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.SmsAuthNumberPostRequest;
+import com.zipkimi.user.dto.request.UserLoginRequest;
 import com.zipkimi.user.dto.response.FindSmsAuthNumberGetResponse;
 import com.zipkimi.user.dto.response.FindSmsAuthNumberPostResponse;
 import com.zipkimi.user.service.UserLoginService;
@@ -27,6 +29,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserLoginController {
 
     private UserLoginService loginService;
+
+    // ************* 로그인 *************
+    @ApiOperation(value = "로그인", notes = "이메일과 비밀번호를 통해 일반 회원 로그인합니다.")
+    @PostMapping(value = "/api/v1/users/login")
+    public ResponseEntity<TokenResponse> login(
+            @RequestBody UserLoginRequest userLoginRequestDto) {
+
+        TokenResponse tokenResponse = loginService.login(userLoginRequestDto);
+        return ResponseEntity.status(HttpStatus.OK).body(tokenResponse);
+    }
 
     // ************* 아이디 찾기 *************
 

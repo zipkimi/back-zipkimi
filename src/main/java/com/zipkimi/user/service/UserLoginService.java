@@ -1,12 +1,18 @@
 package com.zipkimi.user.service;
 
+import com.zipkimi.entity.RefreshTokenEntity;
+import com.zipkimi.entity.UserRole;
+import com.zipkimi.global.dto.response.TokenResponse;
 import com.zipkimi.global.exception.BadRequestException;
+import com.zipkimi.global.jwt.JwtTokenProvider;
 import com.zipkimi.global.service.SmsService;
 import com.zipkimi.global.utils.CodeConstant.SMS_AUTH_CODE;
+import com.zipkimi.repository.RefreshTokenRepository;
 import com.zipkimi.user.dto.request.FindIdCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.FindPwCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.PassResetSmsAuthNumberPostRequest;
 import com.zipkimi.user.dto.request.SmsAuthNumberPostRequest;
+import com.zipkimi.user.dto.request.UserLoginRequest;
 import com.zipkimi.user.dto.response.FindSmsAuthNumberGetResponse;
 import com.zipkimi.user.dto.response.FindSmsAuthNumberPostResponse;
 import com.zipkimi.entity.SmsAuthEntity;
@@ -17,9 +23,11 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
+import javax.lang.model.SourceVersion;
 import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -31,10 +39,68 @@ public class UserLoginService {
     //임시 비밀번호 발급
     private static final String CHAR_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final SecureRandom secureRandom = new SecureRandom();
+
     private final UserRepository userRepository;
     private final SmsAuthRepository smsAuthRepository;
+
+    private final RefreshTokenRepository refreshTokenRepository;
     private final SmsService smsService;
     private final Random random = new Random();
+
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
+
+    // ************* 로그인 *************
+
+    public TokenResponse login(UserLoginRequest userLoginRequest) {
+
+        // TODO 회원가입 로직 개발 후 삭제 필요
+        // TODO 로그인 테스트를 위한 간단 일반 회원 가입 로직
+        // TODO 비밀번호 암호화 적용
+
+        String encodePw = passwordEncoder.encode(userLoginRequest.getPassword());
+        UserEntity userEntity = new UserEntity();
+        userEntity.setEmail(userLoginRequest.getEmail());
+        userEntity.setPassword(encodePw);
+        userEntity.setPhoneNumber("01094342762");
+
+        userRepository.save(userEntity);
+
+        // 회원 정보 존재하는지 확인
+        Optional<UserEntity> user = userRepository.findByEmail(userLoginRequest.getEmail());
+
+        if (user.isEmpty()) {
+            return TokenResponse
+                    .builder()
+                    .message("존재하지 않는 회원입니다.")
+                    .build();
+        }
+
+        System.out.println("userLoginRequest.getPassword() = " + userLoginRequest.getPassword());
+        System.out.println("user.get().getPassword() = " + user.get().getPassword());
+
+        // 회원 패스워드 일치 여부 확인
+        if (!passwordEncoder.matches(userLoginRequest.getPassword(), user.get().getPassword()))
+            return TokenResponse
+                    .builder()
+                    .message("비밀번호가 일치하지 않습니다.")
+                    .build();
+
+        // AccessToken, RefreshToken 발급
+        TokenResponse tokenDto = jwtTokenProvider.createTokenDto(
+                String.valueOf(user.get().getUserId()), UserRole.ROLE_USER.name());
+
+        // RefreshToken 저장
+        RefreshTokenEntity refreshToken = RefreshTokenEntity.builder()
+                .email(user.get().getEmail())
+                .token(tokenDto.getRefreshToken())
+                .build();
+
+        refreshTokenRepository.save(refreshToken);
+
+        return tokenDto;
+    }
+
 
     // ************* 아이디 찾기 *************
 
@@ -311,4 +377,5 @@ public class UserLoginService {
         return password.toString();
     }
 
+    
 }

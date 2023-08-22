@@ -7,13 +7,20 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
 @Entity
 @Table(name = "users")
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@Builder
+@AllArgsConstructor
 public class UserEntity extends BaseEntity implements Serializable {
 
     @Id
