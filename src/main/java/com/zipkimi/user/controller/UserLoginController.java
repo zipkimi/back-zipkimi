@@ -12,10 +12,13 @@ import com.zipkimi.user.dto.response.FindSmsAuthNumberPostResponse;
 import com.zipkimi.user.service.UserLoginService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import javax.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -36,7 +39,22 @@ public class UserLoginController {
     @ApiOperation(value = "일반 회원가입 테스트", notes = "일반 회원가입 테스트입니다.")
     @PostMapping(value = "/api/v1/users/sign")
     public ResponseEntity<BaseResponse> sign(
-            @RequestBody UserLoginRequest userLoginRequestDto) {
+            @RequestBody UserLoginRequest userLoginRequestDto, HttpServletRequest request) {
+
+        if (request.isUserInRole("ROLE_USER")) {
+            System.out.println("==============================1=================================");
+            System.out.println("request.isUserInRole1 = " + request.isUserInRole("ROLE_USER"));
+            System.out.println("===============================================================");
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("Authentication auth1 ==== " + auth);
+        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("USER"))) {
+            System.out.println("================================1===============================");
+            System.out.println("SecurityContext1 = " + auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("USER")));
+            System.out.println("===============================================================");
+
+        }
 
         // 로그인 시 JWT 토큰이 잘 이루어지는지 테스트 하기 위한 간단한 일반 회원가입 테스트
         BaseResponse baseResponse = loginService.simpleJoinTest(userLoginRequestDto);
@@ -48,7 +66,22 @@ public class UserLoginController {
     @ApiOperation(value = "로그인", notes = "이메일과 비밀번호를 통해 일반 회원 로그인합니다.")
     @PostMapping(value = "/api/v1/users/login")
     public ResponseEntity<TokenResponse> login(
-            @RequestBody UserLoginRequest userLoginRequestDto) {
+            @RequestBody UserLoginRequest userLoginRequestDto, HttpServletRequest request) {
+
+        if (request.isUserInRole("ROLE_USER")) {
+            System.out.println("==============================2=================================");
+            System.out.println("request.isUserInRole2 = " + request.isUserInRole("ROLE_USER"));
+            System.out.println("===============================================================");
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("Authentication auth2 ==== " + auth);
+        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("USER"))) {
+            System.out.println("================================2===============================");
+            System.out.println("SecurityContext2 = " + auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("USER")));
+            System.out.println("===============================================================");
+
+        }
 
         TokenResponse tokenResponse = loginService.login(userLoginRequestDto);
         return ResponseEntity.status(HttpStatus.OK).body(tokenResponse);

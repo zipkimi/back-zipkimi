@@ -28,6 +28,8 @@ import java.util.Random;
 import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -78,6 +80,15 @@ public class UserLoginService {
 
         userRepository.save(userEntity);
 
+        Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+        String username = loggedInUser.getName();
+        String getAuthorities = loggedInUser.getAuthorities().toString();
+
+        System.out.println("===============================================================");
+        System.out.println("SecurityContextHolder username = " + username);
+        System.out.println("SecurityContextHolder getAuthorities = " + getAuthorities);
+        System.out.println("===============================================================");
+
         return BaseResponse.builder()
                 .message("일반 회원 가입 테스트에 성공했습니다.")
                 .build();
@@ -119,6 +130,15 @@ public class UserLoginService {
                 .build();
 
         refreshTokenRepository.save(refreshToken);
+
+        Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+        String username = loggedInUser.getName();
+        String getAuthorities = loggedInUser.getAuthorities().toString();
+
+        System.out.println("===============================================================");
+        System.out.println("SecurityContextHolder username = " + username);
+        System.out.println("SecurityContextHolder getAuthorities = " + getAuthorities);
+        System.out.println("===============================================================");
 
         return TokenResponse.builder()
                 .message("로그인에 성공하였습니다.")

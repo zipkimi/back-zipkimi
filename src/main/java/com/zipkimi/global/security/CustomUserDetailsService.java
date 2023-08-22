@@ -21,6 +21,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String userPk) throws UsernameNotFoundException {
         log.info("===================== UserDetails loadUserByUsername userPk = " + userPk);
+
+
         return (UserDetails) userRepository.findById(Long.parseLong(userPk))
                 .orElseThrow(CustomUserNotFoundException::new);
     }
