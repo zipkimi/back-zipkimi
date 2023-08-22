@@ -3,7 +3,8 @@ package com.zipkimi.user.service;
 import com.zipkimi.entity.RefreshTokenEntity;
 import com.zipkimi.entity.UserRole;
 import com.zipkimi.global.dto.response.BaseResponse;
-import com.zipkimi.global.jwt.dto.TokenResponse;
+import com.zipkimi.global.jwt.dto.request.TokenRequest;
+import com.zipkimi.global.jwt.dto.response.TokenResponse;
 import com.zipkimi.global.exception.BadRequestException;
 import com.zipkimi.global.jwt.JwtTokenProvider;
 import com.zipkimi.global.service.SmsService;
@@ -22,7 +23,6 @@ import com.zipkimi.repository.SmsAuthRepository;
 import com.zipkimi.repository.UserRepository;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Random;
 import javax.transaction.Transactional;
@@ -31,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -60,6 +59,7 @@ public class UserLoginService {
 
     // ************* 로그인 *************
 
+    @Transactional
     public BaseResponse simpleJoinTest(UserLoginRequest userLoginRequest) {
 
         // TODO 회원가입 로직 개발 후 삭제 필요
@@ -87,37 +87,100 @@ public class UserLoginService {
                 .build();
     }
 
-    public TokenResponse login(UserLoginRequest userLoginRequest) {
+    @Transactional
+    public void login(TokenRequest tokenRequest, String userAgent) {
 
-        // 회원 정보 존재하는지 확인
-        Optional<UserEntity> user = userRepository.findByEmail(userLoginRequest.getEmail());
+        RefreshTokenEntity refreshToken =
+                RefreshTokenEntity.builder().email(tokenRequest.getRefreshToken()).token(tokenRequest.getRefreshToken()).build();
+        System.out.println("refreshToken = " + refreshToken);
 
-        // Login Email (ID) / PW 를 기반으로 AuthenticationToken 생성
-        UsernamePasswordAuthenticationToken authenticationToken = userLoginRequest.toAuthentication();
+        String loginUserEmail = refreshToken.getEmail();
+        System.out.println("loginUserEmail = " + loginUserEmail);
+        System.out.println("userAgent = " + userAgent);
 
-        // 실제로 검증 (사용자 비밀번호 체크) 이 이루어지는 부분
-        //    authenticate 메서드가 실행이 될 때 CustomUserDetailsService 에서 만들었던 loadUserByUsername 메서드가 실행됨
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        //여기서 refresh Token과 해당 agent로 저장되어있는지 확인을 해야한다.
+        if(refreshTokenRepository.existsByEmailAndUserAgent(loginUserEmail, userAgent)){
+            log.info("기존의 존재하는 refresh 토큰 삭제");
+            refreshTokenRepository.deleteByEmailAndUserAgent(loginUserEmail, userAgent);
+        }
 
-        // 4. 인증 정보를 기반으로 JWT 토큰 생성
-        TokenResponse tokenResponse = jwtTokenProvider.createTokenDto(authentication);
 
-        // 5. RefreshToken DB 저장
-        RefreshTokenEntity refreshToken = RefreshTokenEntity.builder()
-                .email(authenticationToken.getName())
-                .userId(user.get().getUserId())
-                .token(tokenResponse.getRefreshToken())
-                .build();
+//        // 회원 정보 존재하는지 확인
+//        Optional<UserEntity> user = userRepository.findByEmail(userLoginRequest.getEmail());
+//
+//        // Login Email (ID) / PW 를 기반으로 AuthenticationToken 생성
+//        UsernamePasswordAuthenticationToken authenticationToken = userLoginRequest.toAuthentication();
+//        System.out.println("login authenticationToken = " + authenticationToken);
+//        System.out.println("login authenticationToken.getName() = " + authenticationToken.getName());
+//
+//        // 실제로 검증 (사용자 비밀번호 체크) 이 이루어지는 부분
+//        //    authenticate 메서드가 실행이 될 때 CustomUserDetailsService 에서 만들었던 loadUserByUsername 메서드가 실행됨
+//        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+//
+//        // 4. 인증 정보를 기반으로 JWT 토큰 생성
+//        TokenResponse tokenResponse = jwtTokenProvider.createToken(authentication);
+//
+//        // 5. RefreshToken DB 저장
+//        RefreshTokenEntity refreshToken = RefreshTokenEntity.builder()
+//                .email(authenticationToken.getName())
+//                .userId(user.get().getUserId())
+//                .token(tokenResponse.getRefreshToken())
+//                .build();
 
         refreshTokenRepository.save(refreshToken);
 
-        // 5. 토큰 발급
+//        // 5. 토큰 발급
+//        return TokenResponse.builder()
+//                .message("로그인에 성공하였습니다.")
+//                .grantType(tokenRequest.ge())
+//                .accessToken(tokenResponse.getAccessToken())
+//                .refreshToken(tokenResponse.getRefreshToken())
+//                .accessTokenExpireDate(tokenResponse.getAccessTokenExpireDate())
+//                .build();
+    }
+
+    @Transactional
+    public TokenResponse reissue(TokenRequest tokenRequest) {
+
+        // 1. Refresh Token 검증
+        if (!jwtTokenProvider.validateToken(tokenRequest.getRefreshToken())) {
+            throw new RuntimeException("Refresh Token 이 유효하지 않습니다.");
+        }
+
+        // 2. Access Token 에서 Member ID 가져오기
+        Authentication authentication = jwtTokenProvider.getAuthentication(tokenRequest.getAccessToken());
+        System.out.println("=========================== !!! authentication = " + authentication);
+        System.out.println("=========================== !!! authentication.getCredentials() = " + authentication.getCredentials());
+        System.out.println("=========================== !!! authentication.getAuthorities() = " + authentication.getAuthorities());
+        System.out.println("=========================== !!! authentication.getDetails() = " + authentication.getDetails());
+
+        // 3. 저장소에서 Member ID 를 기반으로 Refresh Token 값 가져옴
+        RefreshTokenEntity refreshToken = refreshTokenRepository.findByRefreshTokenId(
+                        Long.valueOf(authentication.getName()))
+                .orElseThrow(() -> new RuntimeException("로그아웃 된 사용자입니다."));
+        System.out.println("=========================== !!! refreshToken = " + refreshToken);
+
+        // 4. Refresh Token 일치하는지 검사
+        if (!refreshToken.getRefreshToken().equals(tokenRequest.getRefreshToken())) {
+            System.out.println("refreshToken.getRefreshToken() = " + refreshToken.getRefreshToken());
+            System.out.println("tokenRequest.getRefreshToken() = " + tokenRequest.getRefreshToken());
+            throw new RuntimeException("토큰의 유저 정보가 일치하지 않습니다.");
+        }
+
+        // 5. 새로운 토큰 생성
+        TokenResponse tokenDto = jwtTokenProvider.createToken(authentication);
+
+        // 6. 저장소 정보 업데이트
+        RefreshTokenEntity newRefreshToken = refreshToken.updateToken(tokenDto.getRefreshToken());
+        refreshTokenRepository.save(newRefreshToken);
+
+        // 토큰 발급
         return TokenResponse.builder()
-                .message("로그인에 성공하였습니다.")
-                .grantType(tokenResponse.getGrantType())
-                .accessToken(tokenResponse.getAccessToken())
-                .refreshToken(tokenResponse.getRefreshToken())
-                .accessTokenExpireDate(tokenResponse.getAccessTokenExpireDate())
+                .message("토큰 재발급에 성공하였습니다.")
+                .grantType(tokenDto.getGrantType())
+                .accessToken(tokenDto.getAccessToken())
+                .refreshToken(tokenDto.getRefreshToken())
+                .accessTokenExpireDate(tokenDto.getAccessTokenExpireDate())
                 .build();
     }
 
@@ -397,5 +460,6 @@ public class UserLoginService {
         return password.toString();
     }
 
-    
+
+
 }

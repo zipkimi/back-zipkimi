@@ -1,24 +1,13 @@
 package com.zipkimi.global.jwt.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zipkimi.entity.UserEntity;
-import com.zipkimi.entity.UserRole;
-import com.zipkimi.global.dto.response.BaseResponse;
 import com.zipkimi.global.jwt.JwtTokenProvider;
-import com.zipkimi.global.jwt.dto.TokenResponse;
-import com.zipkimi.repository.UserRepository;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -48,6 +37,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException  {
 
+        String requestURI = request.getRequestURI();
+
         // 1. Request Header 에서 토큰을 꺼냄
         String jwt = resolveToken(request);
 
@@ -56,6 +47,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
             Authentication authentication = jwtTokenProvider.getAuthentication(jwt);
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            System.out.println("Security Context에 인증 정보를 저장했습니다. " + authentication.getName());
+            log.info("Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}", authentication.getName(), requestURI);
+
         }
 
         filterChain.doFilter(request, response);
