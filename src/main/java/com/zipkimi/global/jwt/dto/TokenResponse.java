@@ -1,4 +1,4 @@
-package com.zipkimi.global.dto.response;
+package com.zipkimi.global.jwt.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;

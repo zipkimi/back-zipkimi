@@ -1,6 +1,7 @@
 package com.zipkimi.user.controller;
 
-import com.zipkimi.global.dto.response.TokenResponse;
+import com.zipkimi.global.dto.response.BaseResponse;
+import com.zipkimi.global.jwt.dto.TokenResponse;
 import com.zipkimi.user.dto.request.FindPwCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.PassResetSmsAuthNumberPostRequest;
 import com.zipkimi.user.dto.request.FindIdCheckSmsGetRequest;
@@ -30,6 +31,19 @@ public class UserLoginController {
 
     private UserLoginService loginService;
 
+    //TODO 일반회원가입 로직 완성 후 삭제 예정
+    // ************* 로그인 테스트를 위한 일반 회원가입 테스트 *************
+    @ApiOperation(value = "일반 회원가입 테스트", notes = "일반 회원가입 테스트입니다.")
+    @PostMapping(value = "/api/v1/users/sign")
+    public ResponseEntity<BaseResponse> sign(
+            @RequestBody UserLoginRequest userLoginRequestDto) {
+
+        // 로그인 시 JWT 토큰이 잘 이루어지는지 테스트 하기 위한 간단한 일반 회원가입 테스트
+        BaseResponse baseResponse = loginService.simpleJoinTest(userLoginRequestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body(baseResponse);
+    }
+    
     // ************* 로그인 *************
     @ApiOperation(value = "로그인", notes = "이메일과 비밀번호를 통해 일반 회원 로그인합니다.")
     @PostMapping(value = "/api/v1/users/login")

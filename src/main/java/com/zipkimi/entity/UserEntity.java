@@ -3,6 +3,8 @@ package com.zipkimi.entity;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -46,5 +48,9 @@ public class UserEntity extends BaseEntity implements Serializable {
 
     @Column(name = "is_use")
     private boolean isUse;
+
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING) //저장될때는 String 으로 저장되도록
+    private UserRole role;
 
 }

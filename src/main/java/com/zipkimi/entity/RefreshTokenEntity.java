@@ -23,12 +23,14 @@ public class RefreshTokenEntity extends BaseEntity {
     @Column(nullable = false)
     private String refreshToken;
 
-    private String accountEmail;
+    private Long userId;
+    private String email;
 
     @Builder
-    public RefreshTokenEntity(String token, String email) {
+    public RefreshTokenEntity(String token, String email, Long userId) {
         this.refreshToken = token;
-        this.accountEmail = email;
+        this.email = email;
+        this.userId = userId;
     }
 
     public RefreshTokenEntity updateToken(String token) {

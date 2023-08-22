@@ -1,4 +1,4 @@
-package com.zipkimi.global.exception;
+package com.zipkimi.global.security.exception;
 
 public class CustomUserNotFoundException extends RuntimeException {
 
