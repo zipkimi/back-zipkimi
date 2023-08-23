@@ -17,7 +17,7 @@ public class TokenRequest {
 
     @NonNull
     @ApiModelProperty(value = "accessToken", name = "accessToken", example = "eyJ0eXAiOiJKV1QiLCJh", required = true)
-    private String accessToken ;
+    private String accessToken;
 
     @NonNull
     @ApiModelProperty(value = "refreshToken", name = "refreshToken", example = "eyJ0eXAiOiJK", required = true)

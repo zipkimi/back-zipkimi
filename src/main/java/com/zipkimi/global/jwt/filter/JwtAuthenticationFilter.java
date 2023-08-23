@@ -14,10 +14,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * JWT 유효한 토큰인지 인증하기 위한 Filter
- * Security 설정 시에 UsernamePasswordAuthentication 앞에 세팅해서 반환하기 전에 인증 여부를 JSON으로 반환시킴
- * 클라이언트가 Header에 토큰 값을 실어서 보내면, doFilterInternal 메서드 안에서 토큰을 검증
- * 인증 객체 생성 후에 Security Context에 정보 저장
+ * JWT 유효한 토큰인지 인증하기 위한 Filter Security 설정 시에 UsernamePasswordAuthentication 앞에 세팅해서 반환하기 전에 인증 여부를
+ * JSON으로 반환시킴 클라이언트가 Header에 토큰 값을 실어서 보내면, doFilterInternal 메서드 안에서 토큰을 검증 인증 객체 생성 후에 Security
+ * Context에 정보 저장
  */
 
 @Slf4j
@@ -34,8 +33,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // request(요청)이 들어오면 diFilterInternal 이 딱 한번 실행된다.
     // request(요청)이 Jwt의 유효성을 검증
     @Override
-    public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException  {
+    public void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+            FilterChain filterChain)
+            throws ServletException, IOException {
 
         log.info("JwtAuthenticationFilter doFilterInternal()");
 
@@ -51,7 +51,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
             Authentication authentication = jwtTokenProvider.getAuthentication(jwt);
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.info("Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}", authentication.getName(), requestURI);
+            log.info("Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}", authentication.getName(),
+                    requestURI);
 
         }
 

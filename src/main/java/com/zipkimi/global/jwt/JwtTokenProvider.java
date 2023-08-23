@@ -32,22 +32,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenProvider {
 
+    private static final String AUTHORITIES_KEY = "auth";
+    private static final String GRANT_TYPE = "Bearer";
+    private final Long ACCESS_TOKEN_EXPIRE_TIME =
+            1000 * 60 * 30L;            // 30분 (1시간 : 60 * 60 * 1000L;)
+    private final Long REFRESH_TOKEN_EXPIRE_TIME =
+            1000 * 60 * 60 * 24 * 7L;  // 7일 (14일 : 14 * 24 * 60 * 60 * 1000L;)
     // application-xxx.properties의 secret key
     @Value("${jwt.token.key}")
     private String secretKey;
     private Key key;
-
-    private static final String AUTHORITIES_KEY = "auth";
-    private static final String GRANT_TYPE = "Bearer";
-    private final Long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30L;            // 30분 (1시간 : 60 * 60 * 1000L;)
-    private final Long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7L;  // 7일 (14일 : 14 * 24 * 60 * 60 * 1000L;)
 
     // application-xxx.properties의 secret key
     @PostConstruct
     protected void init() {
         // key를 base64로 인코딩
         String encodedKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
-        key= Keys.hmacShaKeyFor(encodedKey.getBytes());
+        key = Keys.hmacShaKeyFor(encodedKey.getBytes());
     }
 
     // Jwt 토큰 생성
@@ -72,8 +73,9 @@ public class JwtTokenProvider {
                 .compact();
 
         log.info("============================= JwtTokenProvider accessToken = " + accessToken);
-        log.info("============================= JwtTokenProvider new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME = "
-                + new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME));
+        log.info(
+                "============================= JwtTokenProvider new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME = "
+                        + new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME));
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
@@ -83,8 +85,9 @@ public class JwtTokenProvider {
                 .compact();
 
         log.info("============================= JwtTokenProvider refreshToken = " + refreshToken);
-        log.info("============================= JwtTokenProvider new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME = "
-                + new Date(now.getTime() + REFRESH_TOKEN_EXPIRE_TIME));
+        log.info(
+                "============================= JwtTokenProvider new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME = "
+                        + new Date(now.getTime() + REFRESH_TOKEN_EXPIRE_TIME));
 
         return TokenResponse.builder()
                 .grantType(GRANT_TYPE)
@@ -139,7 +142,8 @@ public class JwtTokenProvider {
 
     private Claims parseClaims(String accessToken) {
         try {
-            return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
+            return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken)
+                    .getBody();
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }

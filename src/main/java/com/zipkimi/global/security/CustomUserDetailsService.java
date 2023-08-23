@@ -24,19 +24,20 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        System.out.println(" ===== CustomUserDetailsService loadUserByUsername ===== ");
-        System.out.println("CustomUserDetailsService email = " + email);
+        log.info(" ===== CustomUserDetailsService loadUserByUsername ===== ");
+        log.info("CustomUserDetailsService email = " + email);
         return userRepository.findByEmail(email)
                 .map(this::createUserDetails)
-                .orElseThrow(() -> new UsernameNotFoundException(email + " -> 데이터베이스에서 찾을 수 없습니다."));
+                .orElseThrow(
+                        () -> new UsernameNotFoundException(email + " -> 데이터베이스에서 찾을 수 없습니다."));
     }
 
     // DB 에 User 값이 존재한다면 UserDetails 객체로 만들어서 리턴
     private UserDetails createUserDetails(UserEntity user) {
         GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(user.getRole().toString());
-        System.out.println(" ===== CustomUserDetailsService createUserDetails ===== ");
-        System.out.println("CustomUserDetailsService grantedAuthority = " + grantedAuthority);
-        System.out.println("CustomUserDetailsService user = " + user);
+        log.info(" ===== CustomUserDetailsService createUserDetails ===== ");
+        log.info("CustomUserDetailsService grantedAuthority = " + grantedAuthority);
+        log.info("CustomUserDetailsService user = " + user);
 
         return new User(
                 String.valueOf(user.getUserId()),
