@@ -37,17 +37,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException  {
 
+        log.info("JwtAuthenticationFilter doFilterInternal()");
+
         String requestURI = request.getRequestURI();
+        log.info("doFilterInternal HttpServletRequest requestURI={}", requestURI);
 
         // 1. Request Header 에서 토큰을 꺼냄
         String jwt = resolveToken(request);
+        log.info("doFilterInternal HttpServletRequest jwt={}", jwt);
 
         // 2. validateToken 으로 토큰 유효성 검사
         // 정상 토큰이면 해당 토큰으로 Authentication 을 가져와서 SecurityContext 에 저장
         if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
             Authentication authentication = jwtTokenProvider.getAuthentication(jwt);
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            System.out.println("Security Context에 인증 정보를 저장했습니다. " + authentication.getName());
             log.info("Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}", authentication.getName(), requestURI);
 
         }

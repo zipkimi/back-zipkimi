@@ -32,14 +32,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenProvider {
 
-    @Value("${jwt.token.key}") // application-xxx.properties의 secret key
+    // application-xxx.properties의 secret key
+    @Value("${jwt.token.key}")
     private String secretKey;
     private Key key;
 
     private static final String AUTHORITIES_KEY = "auth";
     private static final String GRANT_TYPE = "Bearer";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30;            // 30분 (1시간 : 60 * 60 * 1000L;)
-    private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;  // 7일 (14일 : 14 * 24 * 60 * 60 * 1000L;)
+    private final Long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30L;            // 30분 (1시간 : 60 * 60 * 1000L;)
+    private final Long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7L;  // 7일 (14일 : 14 * 24 * 60 * 60 * 1000L;)
 
     // application-xxx.properties의 secret key
     @PostConstruct
@@ -57,34 +58,38 @@ public class JwtTokenProvider {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
-        System.out.println("authorities = " + authorities);
+        log.info("JwtTokenProvider createToken authorities = " + authorities);
 
-        long now = (new Date()).getTime();
+        // 생성날짜, 만료날짜를 위한 Date
+        Date now = new Date();
 
-        Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
         String accessToken = Jwts.builder()
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
                 .setSubject(authentication.getName())
                 .claim(AUTHORITIES_KEY, authorities)
-                .setExpiration(accessTokenExpiresIn)
+                .setExpiration((new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME)))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
         log.info("============================= JwtTokenProvider accessToken = " + accessToken);
+        log.info("============================= JwtTokenProvider new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME = "
+                + new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME));
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
-                .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
+                .setExpiration((new Date(now.getTime() + REFRESH_TOKEN_EXPIRE_TIME)))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
         log.info("============================= JwtTokenProvider refreshToken = " + refreshToken);
+        log.info("============================= JwtTokenProvider new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME = "
+                + new Date(now.getTime() + REFRESH_TOKEN_EXPIRE_TIME));
 
         return TokenResponse.builder()
                 .grantType(GRANT_TYPE)
                 .accessToken(accessToken)
-                .accessTokenExpireDate(accessTokenExpiresIn.getTime())
+                .accessTokenExpireDate(ACCESS_TOKEN_EXPIRE_TIME)
                 .refreshToken(refreshToken)
                 .build();
     }
@@ -97,19 +102,26 @@ public class JwtTokenProvider {
             throw new RuntimeException("권한 정보가 없는 토큰입니다.");
         }
 
+        log.info("JwtTokenProvider getAuthentication claims = " + claims);
+
         // 클레임에서 권한 정보 가져오기
         Collection<? extends GrantedAuthority> authorities =
                 Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 
+        log.info("JwtTokenProvider authorities = " + authorities);
+
         // UserDetails 객체를 만들어서 Authentication 리턴
         UserDetails principal = new User(claims.getSubject(), "", authorities);
+        log.info("JwtTokenProvider principal = " + principal);
 
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
 
     public boolean validateToken(String token) {
+        log.info("JwtTokenProvider validateToken = " + token);
+
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
@@ -133,5 +145,10 @@ public class JwtTokenProvider {
         }
     }
 
-
+    public Long getExpiration(String accessToken) {
+        Claims claims = Jwts.parser()
+                .parseClaimsJws(accessToken)
+                .getBody();
+        return claims.getExpiration().getTime();
+    }
 }
