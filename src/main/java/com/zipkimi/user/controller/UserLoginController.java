@@ -59,7 +59,7 @@ public class UserLoginController {
     @ApiOperation(value = "accessToken, refreshToken 재발급 ",
             notes = "accessToken 만료시 회원 검증 후 refreshToken을 검증해서 accessToken, refreshToken을 재발급합니다.")
     @PostMapping(value = "/api/v1/users/auth/reissue")
-    public ResponseEntity<TokenResponse> reissue(@RequestBody TokenRequest tokenRequest) {
+    public ResponseEntity<TokenResponse> reissue(HttpServletRequest request, @RequestBody TokenRequest tokenRequest) {
         TokenResponse tokenResponse = loginService.reissue(tokenRequest);
 
         return ResponseEntity.status(HttpStatus.OK).body(tokenResponse);

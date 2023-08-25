@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,18 +27,22 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtTokenProvider {
 
+    private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String AUTHORITIES_KEY = "auth";
     private static final String GRANT_TYPE = "Bearer";
+
     private final Long ACCESS_TOKEN_EXPIRE_TIME =
-            1000 * 60 * 30L;            // 30분 (1시간 : 60 * 60 * 1000L;)
+            1000 * 60 * 30L; // 30분 (1시간 : 60 * 60 * 1000L;)
     private final Long REFRESH_TOKEN_EXPIRE_TIME =
-            1000 * 60 * 60 * 24 * 7L;  // 7일 (14일 : 14 * 24 * 60 * 60 * 1000L;)
+            1000 * 60 * 60 * 24 * 7L; // 7일 (14일 : 14 * 24 * 60 * 60 * 1000L;)
+
     // application-xxx.properties의 secret key
     @Value("${jwt.token.key}")
     private String secretKey;
@@ -46,6 +51,7 @@ public class JwtTokenProvider {
     // application-xxx.properties의 secret key
     @PostConstruct
     protected void init() {
+
         // key를 base64로 인코딩
         String encodedKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
         key = Keys.hmacShaKeyFor(encodedKey.getBytes());
@@ -58,18 +64,18 @@ public class JwtTokenProvider {
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
-
         log.info("JwtTokenProvider createToken authorities = " + authorities);
 
         // 생성날짜, 만료날짜를 위한 Date
         Date now = new Date();
 
+        // Access Token 생성
         String accessToken = Jwts.builder()
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
-                .setSubject(authentication.getName())
-                .claim(AUTHORITIES_KEY, authorities)
-                .setExpiration((new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME)))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .setSubject(authentication.getName()) // payload "sub": "name"
+                .claim(AUTHORITIES_KEY, authorities)  // payload "auth": "ROLE_USER"
+                .setExpiration((new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME))) // payload "exp": 151621022 (ex)
+                .signWith(key, SignatureAlgorithm.HS256) // header "alg": "HS256" // HS256: HMAC using SHA-256
                 .compact();
 
         log.info("============================= JwtTokenProvider accessToken = " + accessToken);
@@ -122,12 +128,14 @@ public class JwtTokenProvider {
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
 
+    //  토큰 정보 검증
     public boolean validateToken(String token) {
         log.info("JwtTokenProvider validateToken = " + token);
 
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
+            // Jwts 모듈이 알아서 Exception을 던진다.
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명입니다.");
         } catch (ExpiredJwtException e) {
@@ -149,10 +157,13 @@ public class JwtTokenProvider {
         }
     }
 
-    public Long getExpiration(String accessToken) {
-        Claims claims = Jwts.parser()
-                .parseClaimsJws(accessToken)
-                .getBody();
-        return claims.getExpiration().getTime();
+    // Request Header 에서 토큰 정보 추출
+    public String resolveToken(HttpServletRequest request) {
+        log.info("===================== resolveToken request.getHeader : " + request.getHeader(AUTHORIZATION_HEADER));
+        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(GRANT_TYPE)) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }
