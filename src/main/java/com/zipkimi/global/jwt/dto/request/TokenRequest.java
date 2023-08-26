@@ -23,6 +23,4 @@ public class TokenRequest {
     @ApiModelProperty(value = "refreshToken", name = "refreshToken", example = "eyJ0eXAiOiJK", required = true)
     private String refreshToken;
 
-    private String key;
-
 }

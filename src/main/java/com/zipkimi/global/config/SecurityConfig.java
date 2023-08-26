@@ -46,7 +46,8 @@ public class SecurityConfig  {
                 .and()
                 .authorizeRequests()
                 .antMatchers("/api/v1/userMgmt/**").permitAll()
-                .antMatchers("/api/v1/users/**").permitAll()
+                .antMatchers("/api/v1/users/auth/sign").permitAll()
+                .antMatchers("/api/v1/users/auth/login").permitAll()
                 .antMatchers("/exception/**").permitAll()
 
                 // 만약, 권한별 접근 설정을 하고 싶으면 hasRole 사용

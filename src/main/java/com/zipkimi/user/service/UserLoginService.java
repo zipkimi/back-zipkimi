@@ -57,7 +57,7 @@ public class UserLoginService {
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
-    // ************* 로그인 *************
+    // ************* 로그인 테스트를 위한 간단 일반 회원 가입 *************
 
     @Transactional
     public BaseResponse simpleJoinTest(UserLoginRequest userLoginRequest) {
@@ -87,37 +87,39 @@ public class UserLoginService {
                 .build();
     }
 
+    // ************* 로그인 *************
+
     @Transactional
     public TokenResponse login(UserLoginRequest userLoginRequest) {
 
-        // 1. 회원 정보가 존재하는지 확인 (이메일을 통해서)
+        // #1. 회원 정보가 존재하는지 확인 (이메일을 통해서)
         Optional<UserEntity> user = userRepository.findByEmail(userLoginRequest.getEmail());
 
-        // 2. 로그인 된 Email (ID) / PW 를 기반으로 AuthenticationToken 생성
+        // #2. 로그인 된 Email (ID) / PW 를 기반으로 AuthenticationToken 생성
         UsernamePasswordAuthenticationToken authenticationToken = userLoginRequest.toAuthentication();
         log.info("login authenticationToken = " + authenticationToken);
         log.info("login authenticationToken.getName() = " + authenticationToken.getName());
 
-        // 3. 실제로 검증 (사용자 비밀번호 체크) 이 이루어지는 부분
+        // #3. 실제로 검증 (사용자 비밀번호 체크) 이 이루어지는 부분
         // authenticate 메서드가 실행이 될 때 CustomUserDetailsService 에서 만들었던 loadUserByUsername 메서드가 실행됨
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         log.info("login authentication = " + authentication);
 
-        // 4. 인증 정보를 기반으로 JWT 토큰 생성
+        // #4. 인증 정보를 기반으로 JWT 토큰 생성
         TokenResponse tokenResponse = jwtTokenProvider.createToken(authentication);
         log.info("login tokenResponse = " + tokenResponse);
 
-        // 5. RefreshToken을 DB에 저장 (식별을 위해 userId도 함께 저장)
+        // #5. 이전의 RefreshToken을 DB에서 모두 삭제
+        refreshTokenRepository.deleteAll();
+
+        // #6. RefreshToken을 DB에 저장 (식별을 위해 userId도 함께 저장)
         RefreshTokenEntity refreshToken = RefreshTokenEntity.builder()
                 .userId(user.get().getUserId())
                 .token(tokenResponse.getRefreshToken())
                 .build();
-
-        // 6. 이전의 RefreshToken 삭제
-        refreshTokenRepository.deleteByUserId(Long.valueOf(authentication.getName()));
         refreshTokenRepository.save(refreshToken);
 
-        // 7. 토큰 발급
+        // #7. 토큰 발급
         return TokenResponse.builder()
                 .message("로그인에 성공하였습니다.")
                 .grantType(tokenResponse.getGrantType())
@@ -127,17 +129,20 @@ public class UserLoginService {
                 .build();
     }
 
+
+    // ************* 토큰 재발급 *************
+
     @Transactional
     public TokenResponse reissue(TokenRequest tokenRequest) {
 
-        // 1. Refresh Token 검증
+        // #1. Refresh Token 검증
         if (!jwtTokenProvider.validateToken(tokenRequest.getRefreshToken())) {
             return TokenResponse.builder()
                     .message("Refresh Token이 유효하지 않습니다.")
                     .build();
         }
 
-        // 2. Access Token 에서 Member ID 가져오기
+        // #2. Access Token 에서 Member ID 가져오기
         Authentication authentication = jwtTokenProvider.getAuthentication(tokenRequest.getAccessToken());
         log.info("=========================== !!! reissue authentication = " + authentication);
         log.info("=========================== !!! reissue authentication.getCredentials() = " + authentication.getCredentials());
@@ -145,7 +150,7 @@ public class UserLoginService {
         log.info("=========================== !!! reissue authentication.getDetails() = " + authentication.getDetails());
         log.info("=========================== !!! reissue authentication.getName() = " + authentication.getName());
 
-        // 3. 저장소에서 User ID 를 기반으로 Refresh Token 값 가져옴
+        // #3. 저장소에서 User ID 를 기반으로 Refresh Token 값 가져옴
         Optional<RefreshTokenEntity> refreshToken = refreshTokenRepository.findByUserId(
                         Long.valueOf(authentication.getName()));
 
@@ -157,7 +162,7 @@ public class UserLoginService {
 
         log.info("=========================== !!! reissue refreshToken = " + refreshToken);
 
-        // 4. Refresh Token 일치하는지 검사
+        // #4. Refresh Token 일치하는지 검사
         if (!refreshToken.get().getRefreshToken().equals(tokenRequest.getRefreshToken())) {
             log.info("reissue refreshToken.getRefreshToken() = " + refreshToken.get().getRefreshToken());
             log.info("reissue tokenRequest.getRefreshToken() = " + tokenRequest.getRefreshToken());
@@ -166,20 +171,32 @@ public class UserLoginService {
                     .build();
         }
 
-        // 5. 새로운 토큰 생성
+        // #5. 새로운 토큰 생성
         TokenResponse tokenDto = jwtTokenProvider.createToken(authentication);
 
-        // 6. 저장소 정보 업데이트
+        // #6. 저장소 정보 업데이트
         RefreshTokenEntity newRefreshToken = refreshToken.get().updateToken(tokenDto.getRefreshToken());
         refreshTokenRepository.save(newRefreshToken);
 
-        //7. accessToken과 refreshToken 모두 재발행
+        // #7. accessToken과 refreshToken 모두 재발행
         return TokenResponse.builder()
                 .message("토큰 재발급에 성공하였습니다.")
                 .grantType(tokenDto.getGrantType())
                 .accessToken(tokenDto.getAccessToken())
                 .refreshToken(tokenDto.getRefreshToken())
                 .accessTokenExpireDate(tokenDto.getAccessTokenExpireDate())
+                .build();
+    }
+
+    // ************* 로그아웃 *************
+
+    public TokenResponse logout(String refreshToken) {
+
+        // #1. 로그아웃 시 기존의 RefreshToken을 삭제함.
+        refreshTokenRepository.findByRefreshToken(refreshToken).ifPresent(refreshTokenRepository::delete);
+
+        return TokenResponse.builder()
+                .message("로그아웃 되었습니다.")
                 .build();
     }
 
