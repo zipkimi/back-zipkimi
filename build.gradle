@@ -49,6 +49,10 @@ dependencies {
     // Test 케이스 lombok 설정
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+
+    // Validation
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '2.5.6'
+
 }
 
 tasks.named('test') {
