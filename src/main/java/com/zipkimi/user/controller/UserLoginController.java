@@ -50,7 +50,8 @@ public class UserLoginController {
     }
     
     // ************* 로그인 *************
-    @ApiOperation(value = "로그인", notes = "이메일과 비밀번호를 통해 일반 회원 로그인합니다.")
+
+    @ApiOperation(value = "로그인", notes = "이메일로 로그인합니다.")
     @PostMapping(value = "/auth/login")
     public ResponseEntity<TokenResponse> login(
             @RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
@@ -59,17 +60,15 @@ public class UserLoginController {
         return ResponseEntity.status(HttpStatus.OK).body(tokenResponse);
     }
 
-    @ApiOperation(value = "로그아웃", notes = "일반 회원 로그아웃 합니다.")
+    @ApiOperation(value = "로그아웃", notes = "로그아웃 합니다.")
     @DeleteMapping(value = "/auth/logout")
     public ResponseEntity<TokenResponse> logout(@RequestBody TokenRequest tokenRequest){
-        System.out.println("============================= Controller 로그아웃 메서드 실행 ");
+        log.info("============================= Controller 로그아웃 메서드 실행 ");
         TokenResponse tokenResponse = loginService.logout(tokenRequest.getRefreshToken());
         return ResponseEntity.status(HttpStatus.OK).body(tokenResponse);
     }
 
-    // ************* 토큰 재발급 *************
-
-    @ApiOperation(value = "accessToken, refreshToken 재발급 ",
+    @ApiOperation(value = "토큰 재발급 (accessToken, refreshToken 재발급) ",
             notes = "accessToken 만료시 회원 검증 후 refreshToken을 검증해서 accessToken, refreshToken을 재발급합니다.")
     @PostMapping(value = "/auth/reissue")
     public ResponseEntity<TokenResponse> reissue(HttpServletRequest request, @RequestBody TokenRequest tokenRequest) {
@@ -100,6 +99,8 @@ public class UserLoginController {
                 .body(loginService.checkFindIdSmsAuth(requestDto));
 
     }
+
+    // ***************************************
 
     // ************* 비밀번호 찾기 *************
 

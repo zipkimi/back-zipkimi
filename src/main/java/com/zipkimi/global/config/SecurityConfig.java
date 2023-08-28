@@ -48,6 +48,8 @@ public class SecurityConfig  {
                 .antMatchers("/api/v1/userMgmt/**").permitAll()
                 .antMatchers("/api/v1/users/auth/sign").permitAll()
                 .antMatchers("/api/v1/users/auth/login").permitAll()
+                .antMatchers("/api/v1/users/find-id/**").permitAll()
+                .antMatchers("/api/v1/users/find-pw/**").permitAll()
                 .antMatchers("/exception/**").permitAll()
 
                 // 만약, 권한별 접근 설정을 하고 싶으면 hasRole 사용
