@@ -95,11 +95,10 @@ public class UserLoginService {
         // #1. 회원 정보가 존재하는지 확인 (이메일을 통해서)
         Optional<UserEntity> user = userRepository.findByEmail(userLoginRequest.getEmail());
 
-        if(user.isEmpty() || !user.get().getEmail().equals(userLoginRequest.getEmail())){
-            return TokenResponse.builder()
-                    .message("가입하지 않은 이메일이거나 잘못된 비밀번호입니다.")
-                    .build();
-        }else if(!passwordEncoder.matches(userLoginRequest.getPassword(), user.get().getPassword())){
+        // 회원 정보 존재 여부 확인 - 회원 정보 없으면 예외 처리
+        // 회원 패스워드 일치 여부 확인 - 일치하지 않으면 예외 처리
+        if(user.isEmpty() || !user.get().getEmail().equals(userLoginRequest.getEmail()) ||
+            !passwordEncoder.matches(userLoginRequest.getPassword(), user.get().getPassword())){
             return TokenResponse.builder()
                     .message("가입하지 않은 이메일이거나 잘못된 비밀번호입니다.")
                     .build();
@@ -153,7 +152,7 @@ public class UserLoginService {
                     .build();
         }
 
-        // #2. Access Token 에서 Member ID 가져오기
+        // #2. Access Token 에서 User ID 가져오기
         Authentication authentication = jwtTokenProvider.getAuthentication(tokenRequest.getAccessToken());
         log.info("=========================== !!! reissue authentication = " + authentication);
         log.info("=========================== !!! reissue authentication.getCredentials() = " + authentication.getCredentials());
@@ -226,7 +225,7 @@ public class UserLoginService {
                     .build();
         }
 
-        System.out.println("phoneNumber = " + phoneNumber);
+        log.info("phoneNumber = " + phoneNumber);
 
         // 휴대폰 번호로 일치하는 회원 조회 (회원 사용여부 : 활성화)
         Optional<UserEntity> user = userRepository.findByPhoneNumberAndIsUseIsTrue(phoneNumber);
