@@ -3,14 +3,17 @@ package com.zipkimi.entity;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
@@ -20,6 +23,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Table(name = "users")
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@Builder
+@AllArgsConstructor
 public class UserEntity extends BaseEntity implements Serializable {
 
     @Id
@@ -45,5 +51,18 @@ public class UserEntity extends BaseEntity implements Serializable {
 
     @Column(name = "is_use", columnDefinition = "true")
     private boolean isUse;
+
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING) //저장될때는 String 으로 저장되도록
+    private UserRole role;
+
+//    @Column(name = "roles")
+//    @ElementCollection(fetch = FetchType.EAGER)
+//    @Enumerated(value = EnumType.STRING) //저장될때는 String 으로 저장되도록
+//    @Builder.Default
+//    private List<UserRole> roles = new ArrayList<>();
+
+    //TODO CustomUserDetails 수정 테스트 중
+
 
 }
