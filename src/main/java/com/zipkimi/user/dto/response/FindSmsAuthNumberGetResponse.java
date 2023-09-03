@@ -1,5 +1,7 @@
 package com.zipkimi.user.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -16,6 +18,12 @@ import lombok.Setter;
 @AllArgsConstructor
 public class FindSmsAuthNumberGetResponse {
 
-    @ApiModelProperty(name = "결과", example = "인증번호를 전송하였습니다. / 등록되지 않은 회원입니다.", required = true)
-    private String result;
+    @ApiModelProperty(name = "응답 메시지", example = "인증번호를 전송하였습니다. / 등록되지 않은 회원입니다.", required = true)
+    private String message;
+
+    @JsonInclude(Include.NON_NULL)
+    private String email;
+
+    @JsonInclude(Include.NON_NULL)
+    private String password;
 }
