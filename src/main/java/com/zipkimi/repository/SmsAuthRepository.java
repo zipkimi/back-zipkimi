@@ -17,7 +17,10 @@ public interface SmsAuthRepository extends JpaRepository<SmsAuthEntity, Long> {
     SmsAuthEntity findByPhoneNumberAndSmsAuthNumber(String phoneNumber, String smsAuthNumber);
 
     // 유효한 인증번호 조회 (만료시간)
-    @Query("SELECT sa FROM SmsAuthEntity sa WHERE sa.phoneNumber = :phoneNumber AND sa.isAuthenticate = false AND sa.expirationTime > :currentDateTime")
-    SmsAuthEntity findValidSmsAuthByPhoneNumber(@Param("phoneNumber") String phoneNumber, @Param("currentDateTime") LocalDateTime currentDateTime);
+    @Query("SELECT sa FROM SmsAuthEntity sa WHERE sa.phoneNumber = :phoneNumber AND sa.isAuthenticate = false AND sa.expirationTime > :currentDateTime AND sa.smsAuthType = :smsAuthType")
+    SmsAuthEntity findValidSmsAuthByPhoneNumberAndType(
+            @Param("phoneNumber") String phoneNumber,
+            @Param("currentDateTime") LocalDateTime currentDateTime,
+            @Param("smsAuthType") String smsAuthType);
 
 }
