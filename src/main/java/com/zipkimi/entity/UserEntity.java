@@ -56,12 +56,6 @@ public class UserEntity extends BaseEntity implements Serializable {
     @Enumerated(value = EnumType.STRING) //저장될때는 String 으로 저장되도록
     private UserRole role;
 
-//    @Column(name = "roles")
-//    @ElementCollection(fetch = FetchType.EAGER)
-//    @Enumerated(value = EnumType.STRING) //저장될때는 String 으로 저장되도록
-//    @Builder.Default
-//    private List<UserRole> roles = new ArrayList<>();
-
     //TODO CustomUserDetails 수정 테스트 중
 
 
