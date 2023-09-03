@@ -19,6 +19,9 @@ import lombok.Setter;
 @Setter
 @Getter
 @Entity
+@Builder
+@AllArgsConstructor
+@RequiredArgsConstructor
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @Builder
@@ -46,7 +49,7 @@ public class UserEntity extends BaseEntity implements Serializable {
     @Column(name = "builder_id")
     private String builderId;
 
-    @Column(name = "is_use")
+    @Column(name = "is_use", columnDefinition = "true")
     private boolean isUse;
 
     @Column(nullable = false)
