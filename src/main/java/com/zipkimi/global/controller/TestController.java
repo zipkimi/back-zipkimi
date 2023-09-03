@@ -10,10 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AllArgsConstructor
-@Api(value = "Test API")
+@Api(tags = "테스트")
 public class TestController {
 
-	// @GetMapping("/health")
 	@GetHealthMapping
 	public String health() {
 		return "hello world! :)";

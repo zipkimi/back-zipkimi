@@ -1,15 +1,17 @@
 package com.zipkimi.repository;
 
+import com.zipkimi.entity.SmsAuthEntity;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.zipkimi.entity.SmsAuthEntity;
-
 @Repository
 public interface SmsAuthRepository extends JpaRepository<SmsAuthEntity, Long> {
+
+    List<SmsAuthEntity> findByPhoneNumberAndIsAuthenticateFalseAndIsUseTrue(String phoneNumber);
 
     // 휴대폰 번호와 인증번호로 SMS 인증 정보를 조회하는 메서드
     SmsAuthEntity findByPhoneNumberAndSmsAuthNumber(String phoneNumber, String smsAuthNumber);

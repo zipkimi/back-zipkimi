@@ -1,8 +1,8 @@
 package com.zipkimi.user.controller;
 
+import com.zipkimi.user.dto.request.FindIdCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.FindPwCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.PassResetSmsAuthNumberPostRequest;
-import com.zipkimi.user.dto.request.FindIdCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.SmsAuthNumberPostRequest;
 import com.zipkimi.user.dto.response.FindSmsAuthNumberGetResponse;
 import com.zipkimi.user.dto.response.FindSmsAuthNumberPostResponse;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @AllArgsConstructor
-@Api(value = "로그인")
+@Api(tags = "로그인 관리")
 public class UserLoginController {
 
     private UserLoginService loginService;
