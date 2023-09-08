@@ -271,9 +271,7 @@ public class UserLoginService {
                 // SMS 전송 로직
                 smsService.pushSMSMessage(smsAuthEntitySaved);
             } catch (Exception e) {
-                return FindSmsAuthNumberPostResponse.builder()
-                        .message("SMS 인증번호를 생성하던 중 오류가 발생하였습니다.")
-                        .build();
+                throw new BadRequestException("SMS 인증번호를 생성하던 중 오류가 발생하였습니다.");
             }
         }
 
