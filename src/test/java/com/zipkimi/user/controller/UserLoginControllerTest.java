@@ -1,16 +1,21 @@
 package com.zipkimi.user.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 import com.zipkimi.entity.SmsAuthEntity;
 import com.zipkimi.entity.UserEntity;
+import com.zipkimi.entity.UserRole;
+import com.zipkimi.global.dto.response.BaseResponse;
+import com.zipkimi.global.jwt.JwtTokenProvider;
+import com.zipkimi.global.jwt.repository.RefreshTokenRepository;
 import com.zipkimi.repository.SmsAuthRepository;
 import com.zipkimi.repository.UserRepository;
 import com.zipkimi.user.dto.request.FindIdCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.FindPwCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.PassResetSmsAuthNumberPostRequest;
 import com.zipkimi.user.dto.request.SmsAuthNumberPostRequest;
+import com.zipkimi.user.dto.request.UserLoginRequest;
 import com.zipkimi.user.dto.response.FindSmsAuthNumberGetResponse;
 import com.zipkimi.user.dto.response.FindSmsAuthNumberPostResponse;
 import com.zipkimi.user.service.UserLoginService;
@@ -18,6 +23,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import javax.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -26,7 +32,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Slf4j
 @Transactional
@@ -43,11 +50,94 @@ class UserLoginControllerTest {
     @Mock
     private SmsAuthRepository smsAuthRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private AuthenticationManagerBuilder authenticationManagerBuilder;
+
+    @Mock
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
+
     @InjectMocks
     private UserLoginController userLoginController;
 
     private static final String CHAR_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final SecureRandom secureRandom = new SecureRandom();
+
+    // ************* 로그인 테스트를 위한 간단 일반 회원 가입 *************
+
+    @Test
+    @DisplayName(value = "로그인 테스트를 위한 간단 일반 회원 가입 성공 테스트")
+    void singSuccessTest() throws Exception {
+
+        //given
+        // User 객체 생성 & 비밀번호 암호화 적용
+        UserEntity user = new UserEntity();
+        String encodePw = passwordEncoder.encode(user.getPassword());
+        user.setEmail(user.getEmail());
+        user.setPassword(encodePw);
+        user.setRole(UserRole.ROLE_USER);
+        user.setPhoneNumber("01094342762");
+
+        UserLoginRequest requestDto = new UserLoginRequest(user.getEmail(), user.getPassword());
+
+        when(userLoginService.simpleJoinTest(requestDto)).thenReturn(
+                BaseResponse.builder()
+                        .message("일반 회원 가입 테스트에 성공했습니다.")
+                        .build()
+        );
+
+        //when
+        ResponseEntity<BaseResponse> response = userLoginController.sign(requestDto);
+
+        log.info("******************");
+        log.info("singSuccessTest response.getBody().getResult() ={}", response.getBody().getMessage());
+        log.info("******************");
+
+        //then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("일반 회원 가입 테스트에 성공했습니다.", response.getBody().getMessage());
+
+    }
+
+    @Test
+    @DisplayName(value = "로그인 테스트를 위한 간단 일반 회원 가입 실패 테스트")
+    void signFailureTest() throws Exception{
+
+        UserEntity user = new UserEntity();
+        String encodePw = passwordEncoder.encode(user.getPassword());
+        user.setEmail("test@gmail.com");
+        user.setPassword(encodePw);
+        user.setPhoneNumber("01094342762");
+        user.setRole(UserRole.ROLE_USER);
+        userRepository.save(user);
+
+        UserLoginRequest requestDto = new UserLoginRequest(user.getEmail(), user.getPassword());
+
+        when(userLoginService.simpleJoinTest(requestDto)).thenReturn(
+                BaseResponse.builder()
+                        .message("이미 가입한 회원입니다.")
+                        .build()
+        );
+
+        ResponseEntity<BaseResponse> response = userLoginController.sign(requestDto);
+
+        log.info("******************");
+        log.info("signFailureTest response.getBody().getResult() ={}", response.getBody().getMessage());
+        log.info("******************");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("이미 가입한 회원입니다.", response.getBody().getMessage());
+
+
+    }
+
+    // ************* 토큰 재발급 *************
+    // ************* 로그아웃 *************
 
     // ************* 아이디 찾기 *************
 
