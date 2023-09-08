@@ -3,13 +3,13 @@ package com.zipkimi.user.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zipkimi.entity.SmsAuthEntity;
 import com.zipkimi.entity.UserEntity;
 import com.zipkimi.entity.UserRole;
 import com.zipkimi.global.dto.response.BaseResponse;
-import com.zipkimi.global.jwt.JwtTokenProvider;
+import com.zipkimi.global.jwt.dto.request.TokenRequest;
 import com.zipkimi.global.jwt.dto.response.TokenResponse;
-import com.zipkimi.global.jwt.repository.RefreshTokenRepository;
 import com.zipkimi.repository.SmsAuthRepository;
 import com.zipkimi.repository.UserRepository;
 import com.zipkimi.user.dto.request.FindIdCheckSmsGetRequest;
@@ -33,7 +33,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Slf4j
@@ -55,13 +54,7 @@ class UserLoginControllerTest {
     private PasswordEncoder passwordEncoder;
 
     @Mock
-    private AuthenticationManagerBuilder authenticationManagerBuilder;
-
-    @Mock
-    private JwtTokenProvider jwtTokenProvider;
-
-    @Mock
-    private RefreshTokenRepository refreshTokenRepository;
+    private ObjectMapper objectMapper;
 
     @InjectMocks
     private UserLoginController userLoginController;
@@ -78,8 +71,9 @@ class UserLoginControllerTest {
         //given
         // User 객체 생성 & 비밀번호 암호화 적용
         UserEntity user = new UserEntity();
-        String encodePw = passwordEncoder.encode(user.getPassword());
-        user.setEmail(user.getEmail());
+        String rawPw = "test1234!";
+        String encodePw = passwordEncoder.encode(rawPw);
+        user.setEmail("test@gmail.com");
         user.setPassword(encodePw);
         user.setRole(UserRole.ROLE_USER);
         user.setPhoneNumber("01094342762");
@@ -109,14 +103,16 @@ class UserLoginControllerTest {
     @DisplayName(value = "로그인 테스트를 위한 간단 일반 회원 가입 실패 테스트")
     void signFailureTest() throws Exception{
 
+        //given
         UserEntity user = new UserEntity();
-        String encodePw = passwordEncoder.encode(user.getPassword());
+        String rawPw = "test1234!";
+        String encodePw = passwordEncoder.encode(rawPw);
         user.setEmail("test@gmail.com");
         user.setPassword(encodePw);
-        user.setPhoneNumber("01094342762");
         user.setRole(UserRole.ROLE_USER);
-        userRepository.save(user);
+        user.setPhoneNumber("01094342762");
 
+        //when
         UserLoginRequest requestDto = new UserLoginRequest(user.getEmail(), user.getPassword());
 
         when(userLoginService.simpleJoinTest(requestDto)).thenReturn(
@@ -131,6 +127,7 @@ class UserLoginControllerTest {
         log.info("signFailureTest response.getBody().getResult() ={}", response.getBody().getMessage());
         log.info("******************");
 
+        //then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("이미 가입한 회원입니다.", response.getBody().getMessage());
 
@@ -144,13 +141,11 @@ class UserLoginControllerTest {
     void loginSuccessTest() throws Exception{
 
         //given
-        // User 객체 생성 & 비밀번호 암호화 적용
-        UserEntity user = new UserEntity();
-        String encodePw = passwordEncoder.encode(user.getPassword());
-        user.setEmail(user.getEmail());
-        user.setPassword(encodePw);
+        // 비밀번호 암호화 적용
+        String rawPw = "password123!";
+        String encodePw = passwordEncoder.encode(rawPw);
 
-        UserLoginRequest requestDto = new UserLoginRequest(user.getEmail(), user.getPassword());
+        UserLoginRequest requestDto = new UserLoginRequest("test@example.com", encodePw);
 
         when(userLoginService.login(requestDto)).thenReturn(
                 TokenResponse.builder()
@@ -158,12 +153,14 @@ class UserLoginControllerTest {
                         .build()
         );
 
+        //when
         ResponseEntity<TokenResponse> response = userLoginController.login(requestDto);
 
         log.info("******************");
         log.info("loginSuccessTest response.getBody().getResult() ={}", response.getBody().getMessage());
         log.info("******************");
 
+        //then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("로그인에 성공하였습니다.", response.getBody().getMessage());
     }
@@ -172,12 +169,12 @@ class UserLoginControllerTest {
     @DisplayName(value = "로그인 실패 테스트")
     void loginFailureTest() throws Exception{
 
-        UserEntity user = new UserEntity();
-        String encodePw = passwordEncoder.encode(user.getPassword());
-        user.setEmail("test@gmail.com");
-        user.setPassword(encodePw);
+        //given
+        // 비밀번호 암호화 적용
+        String rawPw = "password123!";
+        String encodePw = passwordEncoder.encode(rawPw);
 
-        UserLoginRequest requestDto = new UserLoginRequest(user.getEmail(), user.getPassword());
+        UserLoginRequest requestDto = new UserLoginRequest("test@example.com", encodePw);
 
         when(userLoginService.login(requestDto)).thenReturn(
                 TokenResponse.builder()
@@ -185,16 +182,99 @@ class UserLoginControllerTest {
                         .build()
         );
 
+        //when
         ResponseEntity<TokenResponse> response = userLoginController.login(requestDto);
 
         log.info("******************");
         log.info("loginFailureTest response.getBody().getResult() ={}", response.getBody().getMessage());
         log.info("******************");
 
+        //then
         //TODO HTTP 상태 코드 - 401 - Unauthorized
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("가입하지 않은 이메일이거나 잘못된 비밀번호입니다.", response.getBody().getMessage());
 
+    }
+
+    // ************* 토큰 재발급 *************
+    @Test
+    @DisplayName(value = "토근 재발급 성공 테스트")
+    void reissueSuccessTest() throws Exception{
+
+        // given
+        TokenRequest requestDto = new TokenRequest();
+        requestDto.setAccessToken("valid-access-token");
+        requestDto.setRefreshToken("valid-refresh-token");
+
+        when(userLoginService.reissue(requestDto)).thenReturn(
+                TokenResponse.builder()
+                        .message("토큰 재발급에 성공하였습니다.")
+                        .build()
+        );
+
+        // when
+        ResponseEntity<TokenResponse> response = userLoginController.reissue(requestDto);
+
+        log.info("******************");
+        log.info("reissueSuccessTest response.getBody().getResult() ={}", response.getBody().getMessage());
+        log.info("******************");
+
+        // then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("토큰 재발급에 성공하였습니다.", response.getBody().getMessage());
+
+    }
+
+    @Test
+    @DisplayName(value = "토큰 재발급 실패 테스트")
+    void reissueFailureTest(){
+
+            //given
+            TokenRequest requestDto = new TokenRequest();
+            requestDto.setAccessToken("invalid-access-token");
+            requestDto.setRefreshToken("invalid-refresh-token");
+
+            when(userLoginService.reissue(requestDto)).thenReturn(
+                    TokenResponse.builder()
+                            .message("토큰의 유저 정보가 일치하지 않습니다.")
+                            .build()
+            );
+
+           //when
+            ResponseEntity<TokenResponse> response = userLoginController.reissue(requestDto);
+
+            log.info("******************");
+            log.info("reissueFailureTest response.getBody().getResult() ={}", response.getBody().getMessage());
+            log.info("******************");
+
+            //then
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+            assertEquals("토큰의 유저 정보가 일치하지 않습니다.", response.getBody().getMessage());
+
+
+    }
+
+    // ************* 로그아웃 *************
+    @Test
+    @DisplayName(value = "로그아웃 성공 테스트")
+    void logoutSuccessTest() throws Exception {
+
+        //given
+        TokenRequest requestDto = new TokenRequest();
+        requestDto.setRefreshToken("valid-refresh-token");
+
+        when(userLoginService.logout(requestDto.getRefreshToken())).thenReturn(
+                TokenResponse.builder()
+                        .message("로그아웃 되었습니다.")
+                        .build()
+        );
+
+        //when
+        ResponseEntity<TokenResponse> response = userLoginController.logout(requestDto);
+
+        //then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("로그아웃 되었습니다.", response.getBody().getMessage());
     }
 
     // ************* 아이디 찾기 *************
