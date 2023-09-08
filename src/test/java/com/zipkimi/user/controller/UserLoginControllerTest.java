@@ -8,6 +8,7 @@ import com.zipkimi.entity.UserEntity;
 import com.zipkimi.entity.UserRole;
 import com.zipkimi.global.dto.response.BaseResponse;
 import com.zipkimi.global.jwt.JwtTokenProvider;
+import com.zipkimi.global.jwt.dto.response.TokenResponse;
 import com.zipkimi.global.jwt.repository.RefreshTokenRepository;
 import com.zipkimi.repository.SmsAuthRepository;
 import com.zipkimi.repository.UserRepository;
@@ -133,6 +134,66 @@ class UserLoginControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("이미 가입한 회원입니다.", response.getBody().getMessage());
 
+
+    }
+
+    // ************* 로그인 *************
+
+    @Test
+    @DisplayName(value = "로그인 성공 테스트")
+    void loginSuccessTest() throws Exception{
+
+        //given
+        // User 객체 생성 & 비밀번호 암호화 적용
+        UserEntity user = new UserEntity();
+        String encodePw = passwordEncoder.encode(user.getPassword());
+        user.setEmail(user.getEmail());
+        user.setPassword(encodePw);
+
+        UserLoginRequest requestDto = new UserLoginRequest(user.getEmail(), user.getPassword());
+
+        when(userLoginService.login(requestDto)).thenReturn(
+                TokenResponse.builder()
+                        .message("로그인에 성공하였습니다.")
+                        .build()
+        );
+
+        ResponseEntity<TokenResponse> response = userLoginController.login(requestDto);
+
+        log.info("******************");
+        log.info("loginSuccessTest response.getBody().getResult() ={}", response.getBody().getMessage());
+        log.info("******************");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("로그인에 성공하였습니다.", response.getBody().getMessage());
+    }
+
+    @Test
+    @DisplayName(value = "로그인 실패 테스트")
+    void loginFailureTest() throws Exception{
+
+        UserEntity user = new UserEntity();
+        String encodePw = passwordEncoder.encode(user.getPassword());
+        user.setEmail("test@gmail.com");
+        user.setPassword(encodePw);
+
+        UserLoginRequest requestDto = new UserLoginRequest(user.getEmail(), user.getPassword());
+
+        when(userLoginService.login(requestDto)).thenReturn(
+                TokenResponse.builder()
+                        .message("가입하지 않은 이메일이거나 잘못된 비밀번호입니다.")
+                        .build()
+        );
+
+        ResponseEntity<TokenResponse> response = userLoginController.login(requestDto);
+
+        log.info("******************");
+        log.info("loginFailureTest response.getBody().getResult() ={}", response.getBody().getMessage());
+        log.info("******************");
+
+        //TODO HTTP 상태 코드 - 401 - Unauthorized
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("가입하지 않은 이메일이거나 잘못된 비밀번호입니다.", response.getBody().getMessage());
 
     }
 
