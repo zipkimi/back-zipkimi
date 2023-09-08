@@ -222,7 +222,7 @@ class UserLoginControllerTest {
                         .with(SecurityMockMvcRequestPostProcessors.csrf()) // 403 에러 방지
                         .content(requestBody))
                 //then
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .andExpect(MockMvcResultMatchers.status().isOk()); // HTTP 상태 코드 401 예상
     }
 
     // ************* 아이디 찾기 *************
