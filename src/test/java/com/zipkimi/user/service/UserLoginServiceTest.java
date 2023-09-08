@@ -71,6 +71,19 @@ class UserLoginServiceTest {
         log.info("## AfterAll 호출 ##");
     }
 
+
+
+    // ************* 로그인 테스트를 위한 간단 일반 회원 가입 *************
+    // ************* 로그인 *************
+    // ************* 토큰 재발급 *************
+    // ************* 로그아웃 *************
+
+
+
+
+
+
+
     // ************* 아이디 찾기 *************
 
     // ************* 아이디 찾기 - SMS 인증번호 전송 *************
@@ -308,7 +321,7 @@ class UserLoginServiceTest {
         // given
         UserEntity user = createUser();
 
-        when(userRepository.findByPhoneNumberAndEmail(any(), any())).thenReturn(Optional.of(user));
+        when(userRepository.findByPhoneNumberAndEmailAndIsUseIsTrue(any(), any())).thenReturn(Optional.of(user));
         when(smsAuthRepository.findValidSmsAuthByPhoneNumberAndType(any(), any(), any())).thenReturn(null);
 
         PassResetSmsAuthNumberPostRequest requestDto = new PassResetSmsAuthNumberPostRequest(user.getPhoneNumber(), user.getEmail());
@@ -328,7 +341,7 @@ class UserLoginServiceTest {
 
         // given
         PassResetSmsAuthNumberPostRequest requestDto = new PassResetSmsAuthNumberPostRequest("01094342762", "test@gmail.com");
-        when(userRepository.findByPhoneNumberAndEmail(requestDto.getPhoneNumber(), requestDto.getEmail())).thenReturn(Optional.empty());
+        when(userRepository.findByPhoneNumberAndEmailAndIsUseIsTrue(requestDto.getPhoneNumber(), requestDto.getEmail())).thenReturn(Optional.empty());
 
         // when
         FindSmsAuthNumberPostResponse response = userLoginService.sendFindPwSmsAuthNumber(requestDto);
@@ -346,7 +359,7 @@ class UserLoginServiceTest {
         // given
         PassResetSmsAuthNumberPostRequest requestDto = new PassResetSmsAuthNumberPostRequest("01094342762", "test@gmail.com");
 
-        when(userRepository.findByPhoneNumberAndEmail(requestDto.getPhoneNumber(), requestDto.getEmail())).thenReturn(Optional.of(new UserEntity()));
+        when(userRepository.findByPhoneNumberAndEmailAndIsUseIsTrue(requestDto.getPhoneNumber(), requestDto.getEmail())).thenReturn(Optional.of(new UserEntity()));
         when(smsAuthRepository.findValidSmsAuthByPhoneNumberAndType(any(), any(), any())).thenReturn(new SmsAuthEntity());
 
         // when
@@ -365,7 +378,7 @@ class UserLoginServiceTest {
         // given
         PassResetSmsAuthNumberPostRequest requestDto = new PassResetSmsAuthNumberPostRequest("01094342762", "test@gmail.com");
 
-        when(userRepository.findByPhoneNumberAndEmail(requestDto.getPhoneNumber(), requestDto.getEmail())).thenReturn(Optional.of(new UserEntity()));
+        when(userRepository.findByPhoneNumberAndEmailAndIsUseIsTrue(requestDto.getPhoneNumber(), requestDto.getEmail())).thenReturn(Optional.of(new UserEntity()));
         when(smsAuthRepository.findValidSmsAuthByPhoneNumberAndType(any(), any(), any())).thenReturn(null);
 
         doThrow(new RuntimeException("SMS 인증번호를 생성하던 중 오류가 발생하였습니다.")).when(smsAuthRepository).save(any());
@@ -393,7 +406,7 @@ class UserLoginServiceTest {
 
         // USER 회원 객체 생성
         UserEntity user = createUser();
-        when(userRepository.findByPhoneNumberAndEmail("01094342762","test@gmail.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByPhoneNumberAndEmailAndIsUseIsTrue("01094342762","test@gmail.com")).thenReturn(Optional.of(user));
 
         FindPwCheckSmsGetRequest requestDto = createFindPwCheckSmsGetRequest(smsAuth.getSmsAuthId(), "1234", "01094342762", "test@gmail.com");
 
@@ -478,7 +491,7 @@ class UserLoginServiceTest {
         FindPwCheckSmsGetRequest requestDto = createFindPwCheckSmsGetRequest(smsAuth.getSmsAuthId(), "1234", "01094342762", "test@gmail.com");
 
         when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
-        when(userRepository.findByPhoneNumberAndEmail("01094342762", "test@gmail.com")).thenReturn(Optional.empty());
+        when(userRepository.findByPhoneNumberAndEmailAndIsUseIsTrue("01094342762", "test@gmail.com")).thenReturn(Optional.empty());
 
         // when
         FindSmsAuthNumberGetResponse response = userLoginService.checkFindPwSmsAuth(requestDto);
