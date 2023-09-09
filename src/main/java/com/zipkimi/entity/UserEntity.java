@@ -19,9 +19,6 @@ import lombok.Setter;
 @Setter
 @Getter
 @Entity
-@Builder
-@AllArgsConstructor
-@RequiredArgsConstructor
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @Builder

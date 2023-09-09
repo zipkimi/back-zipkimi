@@ -13,7 +13,6 @@ import com.zipkimi.user.dto.response.FindSmsAuthNumberPostResponse;
 import com.zipkimi.user.service.UserLoginService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import javax.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -40,8 +39,7 @@ public class UserLoginController {
     // ************* 로그인 테스트를 위한 일반 회원가입 테스트 *************
     @ApiOperation(value = "일반 회원가입 테스트", notes = "일반 회원가입 테스트입니다.")
     @PostMapping(value = "/auth/sign")
-    public ResponseEntity<BaseResponse> sign(
-            @RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public ResponseEntity<BaseResponse> sign(@RequestBody UserLoginRequest userLoginRequest) {
 
         // 로그인 시 JWT 토큰이 잘 이루어지는지 테스트 하기 위한 간단한 일반 회원가입 테스트
         BaseResponse baseResponse = loginService.simpleJoinTest(userLoginRequest);
@@ -53,8 +51,7 @@ public class UserLoginController {
 
     @ApiOperation(value = "로그인", notes = "이메일로 로그인합니다.")
     @PostMapping(value = "/auth/login")
-    public ResponseEntity<TokenResponse> login(
-            @RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public ResponseEntity<TokenResponse> login(@RequestBody UserLoginRequest userLoginRequest) {
 
         TokenResponse tokenResponse = loginService.login(userLoginRequest);
         return ResponseEntity.status(HttpStatus.OK).body(tokenResponse);
@@ -71,7 +68,7 @@ public class UserLoginController {
     @ApiOperation(value = "토큰 재발급 (accessToken, refreshToken 재발급) ",
             notes = "accessToken 만료시 회원 검증 후 refreshToken을 검증해서 accessToken, refreshToken을 재발급합니다.")
     @PostMapping(value = "/auth/reissue")
-    public ResponseEntity<TokenResponse> reissue(HttpServletRequest request, @RequestBody TokenRequest tokenRequest) {
+    public ResponseEntity<TokenResponse> reissue(@RequestBody TokenRequest tokenRequest) {
         TokenResponse tokenResponse = loginService.reissue(tokenRequest);
 
         return ResponseEntity.status(HttpStatus.OK).body(tokenResponse);
