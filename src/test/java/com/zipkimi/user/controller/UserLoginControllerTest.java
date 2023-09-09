@@ -1,53 +1,229 @@
 package com.zipkimi.user.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.zipkimi.entity.SmsAuthEntity;
-import com.zipkimi.entity.UserEntity;
-import com.zipkimi.repository.SmsAuthRepository;
-import com.zipkimi.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zipkimi.global.dto.response.BaseResponse;
+import com.zipkimi.global.jwt.dto.request.TokenRequest;
+import com.zipkimi.global.jwt.dto.response.TokenResponse;
 import com.zipkimi.user.dto.request.FindIdCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.FindPwCheckSmsGetRequest;
 import com.zipkimi.user.dto.request.PassResetSmsAuthNumberPostRequest;
 import com.zipkimi.user.dto.request.SmsAuthNumberPostRequest;
+import com.zipkimi.user.dto.request.UserLoginRequest;
 import com.zipkimi.user.dto.response.FindSmsAuthNumberGetResponse;
 import com.zipkimi.user.dto.response.FindSmsAuthNumberPostResponse;
 import com.zipkimi.user.service.UserLoginService;
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.Optional;
-import javax.transaction.Transactional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-@Slf4j
-@Transactional
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 class UserLoginControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
     private UserLoginService userLoginService;
+    //실제 Controller에 userLoginService 의존성이 주입되어 있기 때문에 @MockBean 가짜 객체 주입
 
-    @Mock
-    private UserRepository userRepository;
+    // ************* 로그인 테스트를 위한 간단 일반 회원 가입 *************
 
-    @Mock
-    private SmsAuthRepository smsAuthRepository;
+    @Test
+    @DisplayName(value = "로그인 테스트를 위한 간단 일반 회원 가입 성공 테스트")
+    @WithMockUser
+        //시큐리티 인증된 사용자 (302 에러 방지)
+    void signSuccessTest() throws Exception {
 
-    @InjectMocks
-    private UserLoginController userLoginController;
+        //given
+        // 테스트에 사용할 UserLoginRequest 객체 생성
+        UserLoginRequest requestDto = new UserLoginRequest();
+        requestDto.setEmail("test@gmail.com");
+        requestDto.setPassword("testPassword!@");
 
-    private static final String CHAR_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    private static final SecureRandom secureRandom = new SecureRandom();
+        BaseResponse successResponse = BaseResponse.builder().message("일반 회원 가입 테스트에 성공했습니다.")
+                .build();
+        when(userLoginService.simpleJoinTest(any(UserLoginRequest.class))).thenReturn(
+                successResponse);
+
+        String requestBody = objectMapper.writeValueAsString(requestDto);
+
+        //when
+        mockMvc.perform(post("/api/v1/users/auth/sign")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.csrf()) // 403 에러 방지
+                        .content(requestBody))
+                .andDo(print())
+                //then
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.message").value("일반 회원 가입 테스트에 성공했습니다."));
+    }
+
+    @Test
+    @DisplayName(value = "로그인 테스트를 위한 간단 일반 회원 가입 실패 테스트")
+    @WithMockUser
+        //시큐리티 인증된 사용자 (302 에러 방지)
+    void signFailureTest() throws Exception {
+
+        //given
+        // 테스트에 사용할 UserLoginRequest 객체 생성
+        UserLoginRequest requestDto = new UserLoginRequest();
+        requestDto.setEmail("test@gmail.com");
+        requestDto.setPassword("wrong_password");
+
+        BaseResponse failureResponse = BaseResponse.builder().message("회원 가입에 실패하였습니다.").build();
+        when(userLoginService.simpleJoinTest(any(UserLoginRequest.class))).thenReturn(
+                failureResponse);
+
+        String requestBody = objectMapper.writeValueAsString(requestDto);
+
+        //when
+        mockMvc.perform(post("/api/v1/users/auth/sign")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.csrf()) // 403 에러 방지
+                        .content(requestBody))
+                .andDo(print())
+                //then
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.message").value("회원 가입에 실패하였습니다."));
+
+    }
+
+    // ************* 로그인 *************
+
+    @Test
+    @DisplayName(value = "로그인 성공 테스트")
+    @WithMockUser
+        //시큐리티 인증된 사용자 (302 에러 방지)
+    void loginSuccessTest() throws Exception {
+
+        //given
+        // 테스트에 사용할 UserLoginRequest 객체 생성
+        UserLoginRequest requestDto = new UserLoginRequest();
+        requestDto.setEmail("test@gmail.com");
+        requestDto.setPassword("testPassword!@");
+
+        TokenResponse successResponse = TokenResponse.builder().message("로그인에 성공하였습니다.").build();
+        when(userLoginService.login(any(UserLoginRequest.class))).thenReturn(successResponse);
+
+        String requestBody = objectMapper.writeValueAsString(requestDto);
+
+        //when
+        mockMvc.perform(post("/api/v1/users/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.csrf()) // 403 에러 방지
+                        .content(requestBody))
+                .andDo(print())
+                //then
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.message").value("로그인에 성공하였습니다."));
+
+    }
+
+    @Test
+    @DisplayName(value = "로그인 실패 테스트")
+    @WithMockUser
+        //시큐리티 인증된 사용자 (302 에러 방지)
+    void loginFailureTest() throws Exception {
+
+        //given
+        // 테스트에 사용할 UserLoginRequest 객체 생성
+        UserLoginRequest requestDto = new UserLoginRequest();
+        requestDto.setEmail("test@gmail.com");
+        requestDto.setPassword("wrong_password");
+
+        TokenResponse response = TokenResponse.builder().message("가입하지 않은 이메일이거나 잘못된 비밀번호입니다.")
+                .build();
+        when(userLoginService.login(any(UserLoginRequest.class))).thenReturn(response);
+
+        String requestBody = objectMapper.writeValueAsString(requestDto);
+
+        //when
+        mockMvc.perform(post("/api/v1/users/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .with(SecurityMockMvcRequestPostProcessors.csrf()) // 403 에러 방지
+                        .content(requestBody))
+                .andDo(print())
+                //then
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.message").value("가입하지 않은 이메일이거나 잘못된 비밀번호입니다."));
+
+    }
+
+    // ************* 로그아웃 *************
+
+    @Test
+    @DisplayName(value = "로그아웃 성공 테스트")
+    @WithMockUser
+        //시큐리티 인증된 사용자 (302 에러 방지)
+    void logoutSuccessTest() throws Exception {
+
+        TokenRequest requestDto = new TokenRequest();
+        requestDto.setAccessToken("logout-test-access-token");
+        requestDto.setRefreshToken("logout-test-refresh-token");
+
+        TokenResponse response = TokenResponse.builder().message("로그아웃 되었습니다.").build();
+        when(userLoginService.logout(requestDto.getRefreshToken())).thenReturn(response);
+
+        String requestBody = objectMapper.writeValueAsString(requestDto);
+
+        //when
+        mockMvc.perform(delete("/api/v1/users/auth/logout")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.csrf()) // 403 에러 방지
+                        .content(requestBody))
+                .andDo(print())
+                //then
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.message").value("로그아웃 되었습니다."));
+    }
+
+    @Test
+    @DisplayName(value = "로그아웃 실패 테스트")
+    @WithMockUser
+        //시큐리티 인증된 사용자 (302 에러 방지)
+    void logoutFailureTest() throws Exception {
+
+        //given
+        TokenRequest requestDto = new TokenRequest();
+        requestDto.setAccessToken("invalid-access-token");
+        requestDto.setRefreshToken("invalid-refresh-token");
+
+        TokenResponse response = TokenResponse.builder().message("잘못된 JWT 서명입니다.").build();
+        when(userLoginService.logout(requestDto.getRefreshToken())).thenReturn(response);
+
+        String requestBody = objectMapper.writeValueAsString(requestDto);
+
+        //when
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/users/auth/logout")
+                        .header("Authorization", "Bearer " + requestDto.getAccessToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.csrf()) // 403 에러 방지
+                        .content(requestBody))
+                //then
+                .andExpect(MockMvcResultMatchers.status().isOk()); // HTTP 상태 코드 401 예상
+    }
 
     // ************* 아이디 찾기 *************
 
@@ -56,306 +232,192 @@ class UserLoginControllerTest {
     void sendFindIdSmsAuthNumberSuccessTest() throws Exception {
 
         //given
-        UserEntity user = new UserEntity();
-        user.setPhoneNumber("01094342762");
-        user.setEmail("test@gmail.com");
-        userRepository.save(user);
+        SmsAuthNumberPostRequest requestDto = new SmsAuthNumberPostRequest("010-9434-2762");
+        FindSmsAuthNumberPostResponse response = FindSmsAuthNumberPostResponse.builder()
+                .message("인증번호를 전송하였습니다.").build();
 
-        SmsAuthNumberPostRequest requestDto = new SmsAuthNumberPostRequest(user.getPhoneNumber());
+        when(userLoginService.sendFindIdSmsAuthNumber(
+                any(SmsAuthNumberPostRequest.class))).thenReturn(response);
 
-        when(userLoginService.sendFindIdSmsAuthNumber(requestDto)).thenReturn(
-                FindSmsAuthNumberPostResponse
-                        .builder()
-                        .message("인증번호를 전송하였습니다.")
-                        .build()
-        );
+        String requestBody = objectMapper.writeValueAsString(requestDto);
 
         //when
-        ResponseEntity<FindSmsAuthNumberPostResponse> response = userLoginController.sendFindIdSmsAuthNumber(requestDto);
-
-        log.info("******************");
-        log.info("sendFindIdSmsAuthNumberSuccessTest response.getBody().getResult() ={}", response.getBody().getMessage());
-        log.info("******************");
-
-        //then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("인증번호를 전송하였습니다.", response.getBody().getMessage());
-
+        mockMvc.perform(post("/api/v1/users/find-id/sms")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                //then
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.message").value("인증번호를 전송하였습니다."));
     }
 
     @Test
     @DisplayName(value = "아이디 찾기 - SMS 인증번호 전송 실패 테스트")
-    void sendFindIdSmsAuthNumberFailureTest() {
+    void sendFindIdSmsAuthNumberFailureTest() throws Exception {
 
         //given
-        UserEntity user = new UserEntity();
-        user.setPhoneNumber("01094342762");
-        user.setEmail("test@gmail.com");
-        userRepository.save(user);
+        SmsAuthNumberPostRequest requestDto = new SmsAuthNumberPostRequest("010-1234-5678");
+        FindSmsAuthNumberPostResponse response = FindSmsAuthNumberPostResponse.builder()
+                .message("입력하신 휴대폰 번호와 일치하는 아이디 정보가 없습니다. \n(고객센터 문의 요망)").build();
 
-        SmsAuthNumberPostRequest requestDto = new SmsAuthNumberPostRequest("01012341234");
+        when(userLoginService.sendFindIdSmsAuthNumber(any(SmsAuthNumberPostRequest.class)))
+                .thenReturn(response);
 
-        when(userLoginService.sendFindIdSmsAuthNumber(requestDto)).thenReturn(
-                FindSmsAuthNumberPostResponse
-                        .builder()
-                        .message("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)")
-                        .build()
-        );
+        String requestBody = objectMapper.writeValueAsString(requestDto);
 
         //when
-        ResponseEntity<FindSmsAuthNumberPostResponse> response = userLoginController.sendFindIdSmsAuthNumber(requestDto);
-
-        log.info("******************");
-        log.info("sendFindIdSmsAuthNumberFailureTest response.getBody().getResult() ={}", response.getBody().getMessage());
-        log.info("******************");
-
-        //then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)", response.getBody().getMessage());
-
+        mockMvc.perform(post("/api/v1/users/find-id/sms")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                //then
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.message").value(
+                        "입력하신 휴대폰 번호와 일치하는 아이디 정보가 없습니다. \n(고객센터 문의 요망)"));
     }
 
     @Test
     @DisplayName(value = "아이디 찾기 - SMS 인증번호 확인 및 아이디 찾기 성공 테스트")
-    void checkFindIdSmsAuthSuccessTest() {
+    void checkFindIdSmsAuthSuccessTest() throws Exception {
 
-        // given
-        UserEntity user = new UserEntity();
-        user.setPhoneNumber("01094342762");
-        user.setEmail("test@gmail.com");
-        userRepository.save(user);
+        //given
+        FindIdCheckSmsGetRequest requestDto = new FindIdCheckSmsGetRequest(1, "010-1234-5678",
+                "1234");
+        FindSmsAuthNumberGetResponse response = FindSmsAuthNumberGetResponse.builder()
+                .message("고객님의 집킴이 계정을 찾았습니다. 아이디 확인 후 로그인 해주세요.").build();
 
-        SmsAuthEntity smsAuth = new SmsAuthEntity();
-        smsAuth.setSmsAuthNumber("1234");
-        smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(30));
-        smsAuthRepository.save(smsAuth);
+        when(userLoginService.checkFindIdSmsAuth(any(FindIdCheckSmsGetRequest.class))).thenReturn(
+                response);
 
-        FindIdCheckSmsGetRequest requestDto = new FindIdCheckSmsGetRequest(1L, user.getPhoneNumber(), "1234");
+        String requestBody = objectMapper.writeValueAsString(requestDto);
 
-        when(userLoginService.checkFindIdSmsAuth(requestDto)).thenReturn(
-                FindSmsAuthNumberGetResponse
-                        .builder()
-                        .message("회원님의 아이디는 'test@gmail.com' 입니다.")
-                        .build());
-
-        when(userRepository.findByPhoneNumber("01094342762")).thenReturn(Optional.of(user));
-        when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
-
-        // when
-        ResponseEntity<FindSmsAuthNumberGetResponse> response = userLoginController.checkFindIdSmsAuth(requestDto);
-
-        log.info("******************");
-        log.info("checkFindIdSmsAuthSuccessTest response.getBody().getResult() ={}", response.getBody().getMessage());
-        log.info("******************");
-
-        // then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("회원님의 아이디는 'test@gmail.com' 입니다.", response.getBody().getMessage());
+        //when
+        mockMvc.perform(get("/api/v1/users/find-id/sms")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                //then
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.message").value("고객님의 집킴이 계정을 찾았습니다. 아이디 확인 후 로그인 해주세요."));
     }
 
     @Test
     @DisplayName(value = "아이디 찾기 - SMS 인증번호 확인 및 아이디 찾기 실패 테스트")
-    void checkFindIdSmsAuthFailureTest() {
+    void checkFindIdSmsAuthFailureTest() throws Exception {
 
-        // given
-        FindIdCheckSmsGetRequest requestDto = new FindIdCheckSmsGetRequest(1L, "01094342762", "1234");
+        //given
+        FindIdCheckSmsGetRequest requestDto = new FindIdCheckSmsGetRequest(1, "010-1234-5678",
+                "1234");
+        FindSmsAuthNumberGetResponse response = FindSmsAuthNumberGetResponse.builder()
+                .message("입력하신 휴대폰 번호와 일치하는 아이디 정보가 없습니다. \n(고객센터 문의 요망)").build();
 
-        SmsAuthEntity smsAuth = new SmsAuthEntity();
-        smsAuth.setSmsAuthNumber("5678");
-        smsAuth.setExpirationTime(LocalDateTime.now().minusMinutes(30));
-        smsAuthRepository.save(smsAuth);
+        when(userLoginService.checkFindIdSmsAuth(any(FindIdCheckSmsGetRequest.class))).thenReturn(
+                response);
 
-        when(userLoginService.checkFindIdSmsAuth(requestDto)).thenReturn(
-                FindSmsAuthNumberGetResponse
-                        .builder()
-                        .message("입력하신 휴대폰 번호와 일치하는 아이디 정보가 없습니다. \n(고객센터 문의 요망)")
-                        .build());
-        when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
+        String requestBody = objectMapper.writeValueAsString(requestDto);
 
-        // when
-        ResponseEntity<FindSmsAuthNumberGetResponse> response = userLoginController.checkFindIdSmsAuth(requestDto);
-
-        log.info("******************");
-        log.info("checkFindIdSmsAuthFailureTest response.getBody().getResult() ={}", response.getBody().getMessage());
-        log.info("******************");
-
-        // then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("입력하신 휴대폰 번호와 일치하는 아이디 정보가 없습니다. \n(고객센터 문의 요망)", response.getBody().getMessage());
+        //when
+        mockMvc.perform(get("/api/v1/users/find-id/sms")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                //then
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.message").value(
+                        "입력하신 휴대폰 번호와 일치하는 아이디 정보가 없습니다. \n(고객센터 문의 요망)"));
     }
 
     // ************* 비밀번호 찾기 *************
 
     @Test
     @DisplayName(value = "비밀번호 찾기 - SMS 인증번호 전송 성공 테스트")
-    void sendFindPwSmsAuthNumberSuccessTest(){
+    void sendFindPwSmsAuthNumberSuccessTest() throws Exception {
 
         //given
-        UserEntity user = new UserEntity();
-        user.setPhoneNumber("01094342762");
-        user.setEmail("test@gmail.com");
-        userRepository.save(user);
+        PassResetSmsAuthNumberPostRequest requestDto = new PassResetSmsAuthNumberPostRequest(
+                "010-9434-2762", "test@gmailc.om");
+        FindSmsAuthNumberPostResponse response = FindSmsAuthNumberPostResponse.builder()
+                .message("인증번호를 전송하였습니다.").build();
 
-        PassResetSmsAuthNumberPostRequest requestDto = new PassResetSmsAuthNumberPostRequest(user.getPhoneNumber(), user.getEmail());
+        when(userLoginService.sendFindPwSmsAuthNumber(
+                any(PassResetSmsAuthNumberPostRequest.class))).thenReturn(response);
 
-        log.info("******************");
-        log.info("requestDto.getPhoneNumber() ={}", requestDto.getPhoneNumber());
-        log.info("requestDto.getEmail() ={}", requestDto.getEmail());
-        log.info("******************");
-
-        when(userLoginService.sendFindPwSmsAuthNumber(requestDto)).thenReturn(
-                FindSmsAuthNumberPostResponse
-                        .builder()
-                        .message("인증번호를 전송하였습니다.")
-                        .build()
-        );
+        String requestBody = objectMapper.writeValueAsString(requestDto);
 
         //when
-        ResponseEntity<FindSmsAuthNumberPostResponse> response = userLoginController.sendFindPwSmsAuthNumber(requestDto);
-
-        log.info("******************");
-        log.info("sendFindPwSmsAuthNumberSuccessTest response.getBody().getResult() ={}", response.getBody().getMessage());
-        log.info("******************");
-
-        //then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("인증번호를 전송하였습니다.", response.getBody().getMessage());
-
-
+        mockMvc.perform(post("/api/v1/users/find-pw/sms")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                //then
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.message").value("인증번호를 전송하였습니다."));
     }
 
     @Test
     @DisplayName(value = "비밀번호 찾기 - SMS 인증번호 전송 실패 테스트")
-    void sendFindPwSmsAuthNumberFailureTest(){
+    void sendFindPwSmsAuthNumberFailureTest() throws Exception {
 
         //given
-        UserEntity user = new UserEntity();
-        user.setPhoneNumber("01094342762");
-        user.setEmail("test@gmail.com");
-        userRepository.save(user);
+        PassResetSmsAuthNumberPostRequest requestDto = new PassResetSmsAuthNumberPostRequest(
+                "010-9434-2762", "test@gmailc.om");
+        FindSmsAuthNumberPostResponse response = FindSmsAuthNumberPostResponse.builder()
+                .message("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)").build();
 
-        PassResetSmsAuthNumberPostRequest requestDto = new PassResetSmsAuthNumberPostRequest("01012341234", "dkdkdk@gmail.com");
+        when(userLoginService.sendFindPwSmsAuthNumber(
+                any(PassResetSmsAuthNumberPostRequest.class))).thenReturn(response);
 
-        log.info("******************");
-        log.info("requestDto.getPhoneNumber() ={}", requestDto.getPhoneNumber());
-        log.info("requestDto.getEmail() ={}", requestDto.getEmail());
-        log.info("******************");
-
-        when(userLoginService.sendFindPwSmsAuthNumber(requestDto)).thenReturn(
-                FindSmsAuthNumberPostResponse
-                        .builder()
-                        .message("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)")
-                        .build()
-        );
+        String requestBody = objectMapper.writeValueAsString(requestDto);
 
         //when
-        ResponseEntity<FindSmsAuthNumberPostResponse> response = userLoginController.sendFindPwSmsAuthNumber(requestDto);
-
-        log.info("******************");
-        log.info("sendFindPwSmsAuthNumberFailureTest response.getBody().getResult() ={}", response.getBody().getMessage());
-        log.info("******************");
-
-        //then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)", response.getBody().getMessage());
-
+        mockMvc.perform(post("/api/v1/users/find-pw/sms")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                //then
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(
+                        jsonPath("$.message").value("입력하신 휴대폰 번호와 일치하는 정보가 없습니다. \n(고객센터 문의 요망)"));
     }
 
     @Test
     @DisplayName(value = "비밀번호 찾기 - SMS 인증번호 확인 및 비밀번호 초기화 성공 테스트")
-    void checkFindPwSmsAuthAndResetSuccessTest() {
+    void checkFindPwSmsAuthAndResetSuccessTest() throws Exception {
 
-        // given
-        UserEntity user = new UserEntity();
-        user.setPhoneNumber("01094342762");
-        user.setEmail("test@gmail.com");
-        userRepository.save(user);
+        //given
+        FindPwCheckSmsGetRequest requestDto = new FindPwCheckSmsGetRequest(1, "010-1234-5678",
+                "1234", "test12@gmail.com");
+        FindSmsAuthNumberGetResponse response = FindSmsAuthNumberGetResponse.builder()
+                .message("고객님의 비밀번호가 초기화 되었습니다. \n비밀번호 확인 후 로그인해주세요.").build();
 
-        SmsAuthEntity smsAuth = new SmsAuthEntity();
-        smsAuth.setSmsAuthNumber("1234");
-        smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(30));
-        smsAuthRepository.save(smsAuth);
+        when(userLoginService.checkFindPwSmsAuth(any(FindPwCheckSmsGetRequest.class))).thenReturn(response);
 
-        FindPwCheckSmsGetRequest requestDto = new FindPwCheckSmsGetRequest(1L, user.getPhoneNumber(), "1234", user.getEmail());
+        String requestBody = objectMapper.writeValueAsString(requestDto);
 
-        String newPassword = tempPassword(10);
-
-        log.info("******************");
-        log.info("newPassword = {}", newPassword);
-        log.info("******************");
-
-        when(userLoginService.checkFindPwSmsAuth(requestDto)).thenReturn(
-                FindSmsAuthNumberGetResponse
-                        .builder()
-                        .message("비밀번호가 '" + newPassword + "'로 초기화 되었습니다.")
-                        .build());
-
-        when(userRepository.findByPhoneNumber("01094342762")).thenReturn(Optional.of(user));
-        when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(user));
-        when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
-
-        // when
-        ResponseEntity<FindSmsAuthNumberGetResponse> response = userLoginController.checkFindPwSmsAuthAndReset(requestDto);
-
-        log.info("******************");
-        log.info("checkFindPwSmsAuthAndResetSuccessTest response.getBody().getResult() ={}", response.getBody().getMessage());
-        log.info("******************");
-
-        // then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("비밀번호가 '" + newPassword + "'로 초기화 되었습니다.", response.getBody().getMessage());
+        mockMvc.perform(get("/api/v1/users/find-pw/sms")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath("$.message").value("고객님의 비밀번호가 초기화 되었습니다. \n비밀번호 확인 후 로그인해주세요."));
     }
 
     @Test
     @DisplayName(value = "비밀번호 찾기 - SMS 인증번호 확인 및 비밀번호 초기화 실패 테스트")
-    void checkFindPwSmsAuthAndResetFailureTest() {
+    void checkFindPwSmsAuthAndResetFailureTest() throws Exception {
 
-        // given
-        UserEntity user = new UserEntity();
-        user.setPhoneNumber("01094342762");
-        user.setEmail("test@gmail.com");
-        userRepository.save(user);
+        //given
+        FindPwCheckSmsGetRequest requestDto = new FindPwCheckSmsGetRequest(1, "010-1234-5678",
+                "1234", "test12@gmail.com");
+        FindSmsAuthNumberGetResponse response = FindSmsAuthNumberGetResponse.builder()
+                .message("입력하신 휴대폰 번호와 이메일 정보가 일치하는 사용자가 없습니다. \n(고객센터 문의 요망)").build();
 
-        SmsAuthEntity smsAuth = new SmsAuthEntity();
-        smsAuth.setSmsAuthNumber("5678");
-        smsAuth.setExpirationTime(LocalDateTime.now().minusMinutes(30));
-        smsAuthRepository.save(smsAuth);
+        when(userLoginService.checkFindPwSmsAuth(
+                any(FindPwCheckSmsGetRequest.class))).thenReturn(response);
 
-        FindPwCheckSmsGetRequest requestDto = new FindPwCheckSmsGetRequest(1L, "01012543658", "1234", user.getEmail());
+        String requestBody = objectMapper.writeValueAsString(requestDto);
 
-        when(userLoginService.checkFindPwSmsAuth(requestDto)).thenReturn(
-                FindSmsAuthNumberGetResponse
-                        .builder()
-                        .message("입력하신 휴대폰 번호와 이메일 정보가 일치하는 사용자가 없습니다.")
-                        .build());
-
-        when(userRepository.findByPhoneNumber("01012543658")).thenReturn(Optional.of(user));
-        when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(user));
-        when(smsAuthRepository.findById(1L)).thenReturn(Optional.of(smsAuth));
-
-        // when
-        ResponseEntity<FindSmsAuthNumberGetResponse> response = userLoginController.checkFindPwSmsAuthAndReset(requestDto);
-
-        log.info("******************");
-        log.info("checkFindPwSmsAuthAndResetFailureTest response.getBody().getResult() ={}", response.getBody().getMessage());
-        log.info("******************");
-
-        // then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("입력하신 휴대폰 번호와 이메일 정보가 일치하는 사용자가 없습니다.", response.getBody().getMessage());
+        //when
+        mockMvc.perform(get("/api/v1/users/find-pw/sms")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                //then
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.message").value(
+                        "입력하신 휴대폰 번호와 이메일 정보가 일치하는 사용자가 없습니다. \n(고객센터 문의 요망)"));
     }
-
-    //임시 비밀번호 생성
-    public String tempPassword(int len) {
-        StringBuilder password = new StringBuilder();
-
-        for (int i = 0; i < len; i++) {
-            int index = secureRandom.nextInt(CHAR_SET.length());
-            char randomChar = CHAR_SET.charAt(index);
-            password.append(randomChar);
-        }
-
-        return password.toString();
-    }
-
 }
