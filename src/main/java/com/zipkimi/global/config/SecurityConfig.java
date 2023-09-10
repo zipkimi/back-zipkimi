@@ -45,7 +45,7 @@ public class SecurityConfig  {
                 // 회원가입(userMgmt), 로그인 및 아이디/비밀번호 찾기(users)을 위한 요청은 검증 없이 요청을 허용함
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/v1/userMgmt/**").permitAll()
+                .antMatchers("/api/v1/userMgmt/users/**").permitAll()
                 .antMatchers("/api/v1/users/auth/sign").permitAll()
                 .antMatchers("/api/v1/users/auth/login").permitAll()
                 .antMatchers("/api/v1/users/find-id/**").permitAll()
