@@ -8,8 +8,10 @@ import static com.zipkimi.global.utils.RegexUtils.isValidPhoneNumber;
 
 import com.zipkimi.entity.SmsAuthEntity;
 import com.zipkimi.entity.UserEntity;
+import com.zipkimi.entity.UserRole;
 import com.zipkimi.global.exception.BadRequestException;
 import com.zipkimi.global.service.SmsService;
+import com.zipkimi.global.utils.CodeConstant.SMS_AUTH_CODE;
 import com.zipkimi.repository.SmsAuthRepository;
 import com.zipkimi.repository.UserRepository;
 import com.zipkimi.user.dto.request.JoinUserPostRequest;
@@ -64,6 +66,7 @@ public class UserManagementService {
                 .password(passwordEncoder.encode(requestDto.getPw()))
                 .name(name)
                 .phoneNumber(optionalSmsAuth.get().getPhoneNumber())
+                .role(UserRole.ROLE_USER)
                 .build();
         userRepository.save(user);
         return JoinUserPostResponse.builder()
@@ -102,7 +105,7 @@ public class UserManagementService {
         smsAuth.setSmsAuthNumber(randomNumber);
         smsAuth.setIsAuthenticate(false);
         smsAuth.setIsUse(true);
-        // TODO Type 값 설정 필요
+        smsAuth.setSmsAuthType(SMS_AUTH_CODE.JOIN.getValue());
         smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(5L));
         smsAuth.setContent("본인확인 인증번호 (" + smsAuth.getSmsAuthNumber() + ")입력시 \n"
                 + "정상처리 됩니다.");
