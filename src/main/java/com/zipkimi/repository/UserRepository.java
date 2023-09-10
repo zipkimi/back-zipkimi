@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
-
     Optional<UserEntity> findByPhoneNumberAndIsUseIsTrue(String phoneNumber);
     Optional<UserEntity> findByPhoneNumberAndEmailAndIsUseIsTrue(String phoneNumber, String email);
     Optional<UserEntity> findByPhoneNumber(String phoneNumber);

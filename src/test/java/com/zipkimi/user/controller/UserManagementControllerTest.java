@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zipkimi.entity.SmsAuthEntity;
 import com.zipkimi.entity.UserEntity;
+import com.zipkimi.global.utils.CodeConstant.SMS_AUTH_CODE;
 import com.zipkimi.repository.SmsAuthRepository;
 import com.zipkimi.repository.UserRepository;
 import com.zipkimi.user.dto.request.JoinUserPostRequest;
@@ -89,7 +90,7 @@ class UserManagementControllerTest {
         smsAuth.setSmsAuthNumber("0000");
         smsAuth.setPhoneNumber("01097050821");
         smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(3L));
-        //TODO Type값 설정 필요
+        smsAuth.setSmsAuthType(SMS_AUTH_CODE.JOIN.getValue());
         smsAuth.setSmsAuthType("In");
         smsAuth.setIsUse(true);
         smsAuth.setIsAuthenticate(false);
@@ -117,8 +118,9 @@ class UserManagementControllerTest {
         SmsAuthEntity smsAuth = new SmsAuthEntity();
         smsAuth.setSmsAuthNumber("0000");
         smsAuth.setPhoneNumber("01000000000");
+        smsAuth.setContent("회원가입 test");
         smsAuth.setExpirationTime(LocalDateTime.now().plusMinutes(3L));
-        smsAuth.setSmsAuthType("JOIN");
+        smsAuth.setSmsAuthType(SMS_AUTH_CODE.JOIN.getValue());
         smsAuth.setIsUse(true);
         smsAuth.setIsAuthenticate(true);
         smsAuthRepository.save(smsAuth);
@@ -137,7 +139,7 @@ class UserManagementControllerTest {
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andDo(print())
                 // then
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.message").value("회원가입 완료"));
 
     }
