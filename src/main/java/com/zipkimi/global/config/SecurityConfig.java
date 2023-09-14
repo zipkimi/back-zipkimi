@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,10 +31,18 @@ public class SecurityConfig  {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
+    // Swagger Page 표시를 위한 셋팅
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().antMatchers("/v2/api-docs", "/swagger-resources/**",
+                "/swagger-ui.html", "/swagger-ui/**", "/webjars/**", "/swagger/**");
+    }
+
     // WebSecurityConfigurerAdapter가 Deprecated가 되어 대신에 SecurityFilterChain을 사용
     // 반환값 존재 / Bean으로 등록 : SecurityFilterChain을 반환하고 Bean으로 등록함으로써 컴포넌트 기반의 보안 설정 가능
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http
                 // REST API 관련 미사용 설정
                 .httpBasic().disable() // REST API 이므로 기본 인증 로그인 미사용
