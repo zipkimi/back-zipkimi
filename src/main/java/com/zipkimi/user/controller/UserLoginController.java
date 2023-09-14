@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @AllArgsConstructor
-@Api(value = "로그인")
+@Api(tags = "로그인")
 @RequestMapping("/api/v1/users")
 public class UserLoginController {
 
