@@ -61,6 +61,9 @@ public class SecurityConfig  {
                 .antMatchers("/api/v1/users/find-pw/**").permitAll()
                 .antMatchers("/exception/**").permitAll()
 
+                //시공사 회원 관련 접근 허용 추가
+                .antMatchers("/api/v1/builderMgmt/builders/**").permitAll()
+
                 // 만약, 권한별 접근 설정을 하고 싶으면 hasRole 사용
                 // 특정 요청에 대한 권한 체크 (ROLE이 USER일 때만 이용 가능)
                 //.antMatchers("/api/v1/users/**").hasRole("USER")
