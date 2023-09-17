@@ -10,5 +10,5 @@ public interface BuilderUserRepository extends JpaRepository<BuilderUserEntity, 
 
     Optional<BuilderUserEntity> findByIdAndIsUseIsTrue(String id);
 
-
+    Optional<BuilderUserEntity> findByPhoneNumberAndIsUseIsTrue(String phoneNumber);
 }
