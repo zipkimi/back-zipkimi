@@ -68,6 +68,7 @@ public class BuilderManagementService {
 
         String randomNumber;
         SmsAuthEntity smsAuthEntitySaved = null;
+        log.info("randomNumber = {}, randomNumber");
 
         if (existingSmsAuth != null) {
             // SMS 인증번호가 만료되지 않았을 경우
