@@ -1,13 +1,14 @@
 package com.zipkimi.global.utils;
 
 import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * 공통적으로 사용하는 유틸 클래스
  */
 public class CommonUtils {
 
-    private static final Random random = new Random();
+    private static final RandomGenerator randomGenerator = new Random();
 
     // 난수로 인증번호 생성
     public static String generateNumber(int len, int dupCd) {
@@ -18,7 +19,7 @@ public class CommonUtils {
         for (int i = 0; i < len; i++) {
 
             //0~9 까지 난수 생성
-            String ran = Integer.toString(random.nextInt(10));
+            String ran = Integer.toString(randomGenerator.nextInt(10));
 
             if (dupCd == 1) {
                 //중복 허용시 numStr 변수에 append
