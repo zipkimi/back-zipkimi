@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BuilderUserRepository extends JpaRepository<BuilderUserEntity, Long> {
 
-    Optional<BuilderUserEntity> findByIdAndIsUseIsTrue(String id);
-
     Optional<BuilderUserEntity> findByPhoneNumberAndIsUseIsTrue(String phoneNumber);
+
 }
