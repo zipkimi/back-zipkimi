@@ -32,8 +32,8 @@ public class BuilderUserEntity extends BaseEntity {
     //TODO builder와 연관 관계 맵핑 필요
     private Long builderId;
 
-    @Column(name = "id")
-    private String id;
+    @Column(name = "email")
+    private String email;
 
     @Column(name = "password")
     private String password;
