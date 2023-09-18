@@ -103,7 +103,6 @@ public class BuilderManagementService {
 
                 // SMS 전송 로직
                 smsService.pushSMSMessage(smsAuthEntitySaved);
-                System.out.println("!!!!!!!!!! smsAuthEntitySaved1 = " + smsAuthEntitySaved);
 
             } catch (Exception e) {
                 throw new BadRequestException("SMS 인증번호를 생성하던 중 오류가 발생하였습니다.");
