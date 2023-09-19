@@ -28,43 +28,43 @@ public class BuilderEntity extends BaseEntity {
     private Long id;
 
     @Column(name = "builder_name")
-    private String builder_name;
+    private String builderName;
 
     @Column(name = "status")
     private String status;  //요청, 취소, 승인완료, 승인거절, 재요청
 
     @Column(name = "builder_number")
-    private String builder_number;
+    private String builderNumber;
 
     @Column(name = "builder_com_number")
-    private String builder_com_number;
+    private String builderComNumber;
 
     @Column(name = "representative_name")
-    private String representative_name;
+    private String representativeName;
 
     @Column(name = "builder_contact_number")
-    private String builder_contact_number;
+    private String builderContactNumber;
 
     @Column(name = "taxation")
     private String taxation;    //과세구분 (일반과세자, 간이과세자, 법인과세자, 면세법인 사업자)
 
     @Column(name = "business_item")
-    private String business_item;   //종목 (개인대표, 공동대표)
+    private String businessItem;   //종목 (개인대표, 공동대표)
 
     @Column(name = "representative_division")
-    private String representative_division; //대표자 구분 (개인대표, 공동대표)
+    private String representativeDivision; //대표자 구분 (개인대표, 공동대표)
 
     @Column(name = "representative_birth_date")
-    private String representative_birth_date;
+    private String representativeBirthDate;
 
     @Column(name = "business_location")
-    private String business_location;
+    private String businessLocation;
 
     @Column(name = "zip_code")
-    private String zip_code;
+    private String zipCode;
 
     @Column(name = "image_id")
-    private Long image_id;
+    private Long imageId;
 
 
 }

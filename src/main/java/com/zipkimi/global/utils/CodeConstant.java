@@ -19,7 +19,10 @@ public class CodeConstant {
         FIND_ID("findId"),
 
         //비밀번호 찾기
-        FIND_PW("findPw");
+        FIND_PW("findPw"),
+
+        //시공사 회원가입
+        BUILDER_JOIN("builderJoin");
 
         final String value;
     }
