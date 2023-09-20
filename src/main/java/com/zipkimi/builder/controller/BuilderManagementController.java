@@ -1,5 +1,7 @@
 package com.zipkimi.builder.controller;
 
+import com.zipkimi.builder.dto.request.JoinBuilderUserPostRequest;
+import com.zipkimi.builder.dto.response.JoinBuilderUserPostResponse;
 import com.zipkimi.builder.service.BuilderManagementService;
 import com.zipkimi.user.dto.request.SmsAuthNumberGetRequest;
 import com.zipkimi.user.dto.request.SmsAuthNumberPostRequest;
@@ -26,6 +28,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class BuilderManagementController {
 
     private BuilderManagementService builderManagementService;
+
+    @ApiOperation(value = "시공사 회원가입")
+    @PostMapping
+    public ResponseEntity<JoinBuilderUserPostResponse> builderUserJoin(@RequestBody
+    JoinBuilderUserPostRequest requestDto){
+        return ResponseEntity.status(HttpStatus.CREATED).body(builderManagementService.joinBuilderUser(requestDto));
+    }
 
     @ApiOperation(value = "SMS 인증번호 전송")
     @PostMapping(value = "/sms")
