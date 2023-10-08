@@ -1,11 +1,19 @@
 package com.zipkimi.builder.service;
 
 import static com.zipkimi.global.utils.CommonUtils.generateNumber;
+import static com.zipkimi.global.utils.RegexUtils.getFormatName;
+import static com.zipkimi.global.utils.RegexUtils.isValidEmail;
+import static com.zipkimi.global.utils.RegexUtils.isValidName;
+import static com.zipkimi.global.utils.RegexUtils.isValidPassword;
 import static com.zipkimi.global.utils.RegexUtils.isValidPhoneNumber;
 
+import com.zipkimi.builder.dto.request.JoinBuilderUserPostRequest;
+import com.zipkimi.builder.dto.response.JoinBuilderUserPostResponse;
+import com.zipkimi.entity.BuilderEntity;
 import com.zipkimi.entity.BuilderUserEntity;
 import com.zipkimi.entity.SmsAuthEntity;
 import com.zipkimi.entity.UserEntity;
+import com.zipkimi.entity.UserRole;
 import com.zipkimi.global.exception.BadRequestException;
 import com.zipkimi.global.service.SmsService;
 import com.zipkimi.global.utils.CodeConstant.SMS_AUTH_CODE;
@@ -39,6 +47,60 @@ public class BuilderManagementService {
 
     private final SmsAuthRepository smsAuthRepository;
     private final SmsService smsService;
+
+    public JoinBuilderUserPostResponse joinBuilderUser(JoinBuilderUserPostRequest requestDto) {
+
+        // 이메일 & 사용여부로 일반 회원 정보 조회
+        Optional<UserEntity> optionalUser = userRepository.findByEmailAndIsUseIsTrue(requestDto.getEmail());
+
+        // 이메일 & 사용여부로 시공사 회원 정보 조회
+        Optional<BuilderUserEntity> optionalBuilderUser = builderUserRepository.findByEmailAndIsUseIsTrue(
+                requestDto.getEmail());
+
+        // 일반 회원이 존재하거나, 시공사 회원이 존재할 경우
+        if (optionalBuilderUser.isPresent() || optionalUser.isPresent()) {
+            throw new BadRequestException("이미 사용 중인 이메일입니다.");
+        }
+        if (!isValidEmail(requestDto.getEmail())) {
+            throw new BadRequestException("이메일 주소를 확인해주세요.");
+        }
+        String builderName = getFormatName(requestDto.getBuilderName());
+        if (!isValidName(builderName) || builderName.isEmpty()) {
+            throw new BadRequestException("업체명을 확인해주세요.");
+        }
+        if (!isValidPassword(requestDto.getPassword())) {
+            throw new BadRequestException("비밀번호 형식을 확인해주세요.");
+        }
+
+        Optional<SmsAuthEntity> smsAuth = smsAuthRepository.findById(requestDto.getSmsAuthId());
+
+        if(smsAuth.isEmpty() || !smsAuth.get().getIsAuthenticate()){
+            throw new BadRequestException("인증번호 전송부터 다시 진행해주세요.");
+        }
+
+        // Builder에 업체명만 일단 저장 - 추후 시공사 인증 후에 나머지 정보들 insert 되도록
+        BuilderEntity builder = BuilderEntity.builder()
+                .builderName(requestDto.getBuilderName())
+                .build();
+        builderRepository.save(builder);
+
+        // BuilderUser에 나머지 정보 저장
+        BuilderUserEntity builderUser = BuilderUserEntity.builder()
+                .isUse(true)
+                .email(requestDto.getEmail())
+                .builderId(builder.getId())
+                .password(passwordEncoder.encode(requestDto.getPassword()))
+                .phoneNumber(smsAuth.get().getPhoneNumber())
+                .role(UserRole.ROLE_BUILDER)
+                .build();
+        builderUserRepository.save(builderUser);
+
+        return JoinBuilderUserPostResponse.builder()
+                .email(builderUser.getEmail())
+                .builderName(builder.getBuilderName())
+                .message("시공사 회원가입 완료")
+                .build();
+    }
 
     public SmsAuthNumberPostResponse sendBuilderUserJoinSmsAuthNumber(
             SmsAuthNumberPostRequest requestDto) {
