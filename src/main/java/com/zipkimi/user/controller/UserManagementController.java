@@ -65,7 +65,6 @@ public class UserManagementController {
 
 
 // TODO - 1. 네이버, 카카오 - 회원가입 후 API 키 발급 - 푸름
-// TODO - 2. 일반 집킴이 회원가입 API 개발 - 푸름
 // TODO - 3. Oauth 2.0 활용한 소셜 로그인 개발 - 페어프로그래밍
 
 }

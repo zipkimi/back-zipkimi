@@ -134,6 +134,7 @@ public class UserManagementService {
         if(!requestDto.getSmsAuthNumber().equals(smsAuth.getSmsAuthNumber())){
             throw new BadRequestException("인증번호를 확인해주세요.");
         }
+        smsAuth.setIsAuthenticate(true);
         return SmsAuthNumberGetResponse.builder().message(message).build();
     }
 }
