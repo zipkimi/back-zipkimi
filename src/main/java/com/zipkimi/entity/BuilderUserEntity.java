@@ -2,6 +2,8 @@ package com.zipkimi.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -27,8 +29,11 @@ public class BuilderUserEntity extends BaseEntity {
     @Column(name = "builder_member_id")
     private Long builderMemberId;
 
-    @Column(name = "id")
-    private String id;
+    //TODO builder와 연관 관계 맵핑 필요
+    private Long builderId;
+
+    @Column(name = "email")
+    private String email;
 
     @Column(name = "password")
     private String password;
@@ -39,5 +44,8 @@ public class BuilderUserEntity extends BaseEntity {
     @Column(name = "is_use", columnDefinition = "true")
     private boolean isUse;
 
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING) //저장될때는 String 으로 저장되도록
+    private UserRole role;
 
 }
