@@ -20,12 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/builders")
 public class BuilderLoginController {
 
-    private BuilderLoginService loginService;
+    private final BuilderLoginService loginService;
 
     @ApiOperation(value = "시공사 로그인")
     public ResponseEntity<TokenResponse> login(@RequestBody BuilderLoginRequest request){
-        TokenResponse tokenResponse = loginService.login(request);
-        return ResponseEntity.status(HttpStatus.OK).body(tokenResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(loginService.login(request));
     }
 
 }

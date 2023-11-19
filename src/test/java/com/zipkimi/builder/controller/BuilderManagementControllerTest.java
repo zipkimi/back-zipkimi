@@ -16,10 +16,10 @@ import com.zipkimi.user.dto.response.SmsAuthNumberGetResponse;
 import com.zipkimi.user.dto.response.SmsAuthNumberPostResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -34,7 +34,8 @@ class BuilderManagementControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+//    @MockBean
+    @InjectMocks
     private BuilderManagementService builderManagementService;
 
     // ************* 시공사 회원 가입 *************
@@ -47,7 +48,7 @@ class BuilderManagementControllerTest {
                 1L);
         JoinBuilderUserPostResponse response = JoinBuilderUserPostResponse.builder().message("시공사 회원가입 완료").build();
 
-        when(builderManagementService.joinBuilderUser(any(JoinBuilderUserPostRequest.class))).thenReturn(response);
+//        when(builderManagementService.joinBuilderUser(any(JoinBuilderUserPostRequest.class))).thenReturn(response);
 
         String requestBody = objectMapper.writeValueAsString(requestDto);
 
