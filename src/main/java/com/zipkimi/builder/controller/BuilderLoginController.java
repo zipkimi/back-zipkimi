@@ -22,7 +22,7 @@ public class BuilderLoginController {
 
     private BuilderLoginService loginService;
 
-    @ApiOperation(value = "시공사 로그인")
+    @ApiOperation(value = "시공사 로그인 ")
     public ResponseEntity<TokenResponse> login(@RequestBody BuilderLoginRequest request){
         TokenResponse tokenResponse = loginService.login(request);
         return ResponseEntity.status(HttpStatus.OK).body(tokenResponse);
